@@ -1,522 +1,751 @@
-# Product Requirements Document (PRD)
+# Asset Management Client App
 
-## 1. Обзор продукта
-
-### 1.1 Название продукта
-Мобильное приложение для клиентов управляющей компании (временное название: **Asset Management Client App**)
-
-### 1.2 Описание
-Мобильное приложение на базе React Native для платформ iOS и Android, предназначенное для клиентов управляющей компании. Приложение предоставляет клиентам доступ к информации о продуктах доверительного управления, текущему портфелю активов и обеспечивает коммуникацию с персональным менеджером через встроенный чат.
-
-### 1.3 Цель продукта
-Обеспечить состоятельным инвесторам удобный мобильный доступ к информации об их активах под управлением компании, продуктах доверительного управления и прямую связь с персональным менеджером.
-
-### 1.4 Статус
-Draft
-
-### 1.5 Дата создания
-2026-03-31
+A comprehensive React Native mobile application for asset management, enabling clients to manage investment portfolios, complete tasks, communicate with personal managers, and track investment performance in real-time.
 
 ---
 
-## 2. Целевая аудитория и персоны
+## Table of Contents
 
-### 2.1 Основная целевая аудитория
-Состоятельные инвесторы, которые передали свои активы или часть активов в доверительное управление управляющей компании.
-
-### 2.2 Персона #1: Активный инвестор
-
-**Имя:** Александр
-**Возраст:** 35-55 лет
-**Профиль:**
-- Опытный инвестор с диверсифицированным портфелем
-- Передал часть активов в доверительное управление
-- Активно следит за рынком и своими инвестициями
-- Ценит оперативную связь с менеджером
-- Ищет новые инвестиционные возможности
-
-**Потребности:**
-- Быстрый доступ к информации о текущем портфеле
-- Понимание стратегий доверительного управления
-- Возможность оперативно обсудить решения с менеджером
-- Просмотр истории и динамики портфеля
-
-**Боли:**
-- Отсутствие удобного мобильного доступа к информации
-- Задержки в коммуникации с менеджером
-- Сложность отслеживания нескольких продуктов одновременно
-
-### 2.3 Персона #2: Консервативный клиент
-
-**Имя:** Елена
-**Возраст:** 45-65 лет
-**Профиль:**
-- Передала значительную часть активов в доверительное управление
-- Предпочитает долгосрочные стратегии
-- Периодически проверяет состояние портфеля
-- Ценит персональный подход и доверительные отношения
-
-**Потребности:**
-- Понятная информация о продуктах
-- Простой доступ к текущему состоянию портфеля
-- Возможность задать вопросы менеджеру
-- Безопасность и конфиденциальность данных
-
-**Боли:**
-- Сложные финансовые термины и непонятные отчеты
-- Трудности с техническими решениями
-- Беспокойство о безопасности мобильных приложений
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Target Users](#target-users)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 3. Функциональные требования
+## Project Overview
 
-### 3.1 Приоритет: MUST HAVE (обязательно для MVP)
+The Asset Management Client App is a mobile-first solution designed for investment clients to interact with their portfolios, communicate with personal managers, and complete required actions efficiently. Built with React Native and Expo, the app provides a professional, secure, and accessible experience for financial management.
 
-#### FR-001: Аутентификация и авторизация
-**Описание:** Безопасный вход в приложение для зарегистрированных клиентов
-**Детали:**
-- Вход с использованием email/пароля или номера телефона
-- Возможность биометрической аутентификации (Touch ID/Face ID) для быстрого доступа
-- Автоматический выход из сессии после периода неактивности (15 минут)
-- Восстановление пароля через email или SMS
-- Регистрация новых пользователей не предусмотрена на MVP этапе (учётные данные предоставляются компанией после подписания договора)
+### Key Features
 
-**Критерии приёмки:**
-- Пользователь может войти в приложение с валидными учётными данными
-- Сессия автоматически завершается через 15 минут неактивности
-- Биометрическая аутентификация работает корректно
+| Feature | Description |
+|---------|-------------|
+| **Portfolio Management** | Real-time view of investment portfolio performance, asset allocation, and returns |
+| **Task Management** | Centralized task list for document submissions, signature requests, meeting scheduling, and investment decisions |
+| **Product Catalog** | Browse and invest in available investment products and strategies |
+| **Chat Communication** | Direct messaging with personal asset managers |
+| **Profile Management** | Account settings, KYC documentation, and preferences |
+| **Dark Mode** | Full dark mode support for reduced eye strain |
+| **Accessibility** | WCAG 2.1 AA compliant for all users |
+| **Offline Support** | Cached data access when network unavailable |
 
-#### FR-002: Витрина продуктов (Product Showcase)
-**Описание:** Экран для просмотра доступных продуктов доверительного управления
-**Детали:**
-- Список всех доступных стратегий доверительного управления
-- Карточки продуктов с базовой информацией (название, краткое описание, ключевая статистика)
-- Детальная страница каждого продукта с:
-  - Полным описанием стратегии
-  - Исторической доходностью
-  - Уровнем риска
-  - Минимальной суммой инвестиций
-  - Условиями управления
-- Продукт индивидуального доверительного управления с описанием возможностей
-- Возможность отметить продукт как "избранное"
-- Фильтрация и сортировка продуктов
+### Technology Stack
 
-**Критерии приёмки:**
-- Отображается полный список продуктов
-- Пользователь может открыть детальную информацию о любом продукте
-- Фильтрация работает корректно
-
-#### FR-003: Портфель активов (Portfolio)
-**Описание:** Экран для просмотра текущего портфеля активов под управлением
-**Детали:**
-- Общая стоимость портфеля с динамикой за период (день/неделя/месяц/год)
-- Структура портфеля по:
-  - Классам активов (акции, облигации, ПИФы, etc.)
-  - Стратегиям доверительного управления
-  - Валютам
-- Список всех активов с текущей стоимостью и долей в портфеле
-- Детальная информация по каждому активу
-- Графики динамики стоимости портфеля
-- История операций (пополнение, вывод, сделки)
-
-**Критерии приёмки:**
-- Корректно отображается общая стоимость портфеля
-- Структура портфеля визуализирована
-- История операций доступна для просмотра
-
-#### FR-004: In-app чат с менеджером
-**Описание:** Встроенный чат для коммуникации с персональным менеджером
-**Детали:**
-- Список чатов с менеджерами (если их несколько)
-- История переписки
-- Отправка текстовых сообщений
-- Отправка изображений и документов
-- Уведомления о новых сообщениях (push и in-app)
-- Индикатор онлайн-статуса менеджера
-- Прочитано/не прочитано для сообщений
-- Поиск по истории переписки
-
-**Критерии приёмки:**
-- Пользователь может отправлять и получать сообщения
-- Push-уведомления приходят своевременно
-- История переписки сохраняется
-
-### 3.2 Приоритет: SHOULD HAVE (важно, но не критично для MVP)
-
-#### FR-005: Push-уведомления
-**Описание:** Уведомления о важных событиях
-**Детали:**
-- Уведомления о новых сообщениях в чате
-- Уведомления о важных изменениях в портфеле
-- Уведомления о новых продуктах
-- Настройки уведомлений (включить/выключить по категориям)
-
-#### FR-006: Профиль пользователя
-**Описание:** Управление личной информацией и настройками
-**Детали:**
-- Просмотр личных данных
-- Изменение контактной информации
-- Настройки безопасности (изменение пароля, биометрия)
-- Настройки уведомлений
-- Выход из аккаунта
-
-#### FR-007: Документы и отчеты
-**Описание:** Доступ к документам и отчетам
-**Детали:**
-- Список доступных документов (договоры, отчеты, выписки)
-- Скачивание документов в PDF формате
-- Просмотр документов в приложении
-- Фильтрация по типу и дате
-
-### 3.3 Приоритет: COULD HAVE (желательно в будущих версиях)
-
-#### FR-008: Виджет портфеля
-**Описание:** Виджет на главном экране телефона с краткой информацией о портфеле
-
-#### FR-009: Биометрическая аутентификация
-**Описание:** Расширенная поддержка биометрии (включая Android)
-
-#### FR-010: Офлайн-режим
-**Описание:** Частичная работа приложения без интернет-соединения
-**Детали:**
-- Кэширование данных портфеля
-- Кэширование истории чата
-- Синхронизация при восстановлении соединения
-
-#### FR-011: Мультиязычность
-**Описание:** Поддержка нескольких языков (русский, английский)
-
-### 3.4 Приоритет: WON'T HAVE (не включается в текущую версию)
-
-- Самостоятельная регистрация новых клиентов через приложение
-- Проведение транзакций (пополнение/вывод средств)
-- Торговый функционал
-- Интеграция с внешними платежными системами
-- Сравнение портфеля с бенчмарками в реальном времени
-- AI-рекомендации по инвестициям
+| Category | Technology |
+|----------|------------|
+| **Framework** | React Native with Expo |
+| **Language** | TypeScript (strict mode) |
+| **State Management** | React Query (server state) |
+| **Navigation** | React Navigation 6 |
+| **Styling** | NativeWind (Tailwind CSS) |
+| **Icons** | Lucide React Native |
+| **Animations** | React Native Reanimated |
+| **Date Handling** | date-fns |
+| **Testing** | Jest, React Testing Library |
 
 ---
 
-## 4. Нефункциональные требования
+## Features
 
-### 4.1 Производительность (Performance)
-- **NFR-001:** Время запуска приложения не более 3 секунд
-- **NFR-002:** Время загрузки экранов не более 1 секунды
-- **NFR-003:** Время отклика на действия пользователя не более 200мс
-- **NFR-004:** Поддержка работы на устройствах с iOS 13+ и Android 8.0+
+### 📊 Portfolio Dashboard
 
-### 4.2 Безопасность (Security)
-- **NFR-005:** Шифрование данных при передаче (TLS 1.3)
-- **NFR-006:** Шифрование локального хранилища данных
-- **NFR-007:** Автоматический выход из сессии через 15 минут неактивности
-- **NFR-008:** Соответствие требованиям законодательства о персональных данных
-- **NFR-009:** Безопасное хранение учётных данных (Keychain/Keystore)
+- Investment portfolio overview with real-time performance metrics
+- Asset allocation visualization
+- Historical performance charts
+- Dividend and distribution tracking
+- Document repository for statements and reports
 
-### 4.3 Надёжность (Reliability)
-- **NFR-010:** Доступность приложения 99.5% времени
-- **NFR-011:** Корректная обработка потери соединения
-- **NFR-012:** Автоматическое восстановление после сбоев
+### ✅ Task Management
 
-### 4.4 Масштабируемость (Scalability)
-- **NFR-013:** Архитектура должна поддерживать до 10,000 пользователей на начальном этапе
-- **NFR-014:** Возможность горизонтального масштабирования бэкенда
+- Unified task list with status filtering (Pending, Overdue, Completed)
+- Task types: Document Request, Signature Request, Meeting Request, Information Request, Investment Decision, KYC Update, Review Request
+- Priority indicators (Urgent, High, Normal, Low)
+- Due date tracking with overdue alerts
+- Pull-to-refresh and pagination support
 
-### 4.5 Удобство использования (Usability)
-- **NFR-015:** Интуитивно понятный интерфейс без необходимости обучения
-- **NFR-016:** Соответствие гайдлайнам Human Interface Guidelines (iOS) и Material Design (Android)
-- **NFR-017:** Поддержка accessibility features (VoiceOver, TalkBack)
-- **NFR-018:** Адаптация под различные размеры экранов
+### 💬 Communication
 
-### 4.6 Поддерживаемость (Maintainability)
-- **NFR-019:** Трёхуровневая архитектура: View, Domain, Adapters
-- **NFR-020:** Модульная структура кода
-- **NFR-021:** Документация кода и API
-- **NFR-022:** Unit тесты с покрытием не менее 70%
+- Real-time chat with personal asset managers
+- File sharing and document exchange
+- Read receipts and typing indicators
+- Push notifications for new messages
+
+### 🏦 Product Catalog
+
+- Browse investment products and strategies
+- Product details with performance data
+- Investment documents and prospectuses
+- Investment action flows
+
+### 🔐 Security & Compliance
+
+- Biometric authentication support
+- Secure document storage
+- KYC/AML documentation management
+- Audit trail for all actions
 
 ---
 
-## 5. Технический стек и архитектура
+## Target Users
 
-### 5.1 Технологический стек
+| User Type | Description |
+|-----------|-------------|
+| **Investment Clients** | High-net-worth individuals managing investment portfolios through the asset management firm |
+| **Personal Managers** | Asset managers who manage client portfolios and communicate with clients |
 
-**Frontend (Mobile):**
-- React Native 0.73+
-- TypeScript
-- React Navigation (навигация)
-- React Query (управление состоянием серверных данных)
-- Zustand или Redux Toolkit (локальное состояние)
-- Tailwind CSS / NativeWind (стилизация)
-- shadcn/ui (UI компоненты)
+---
 
-**Backend:**
-- Node.js
-- REST API или GraphQL
-- WebSocket (для чата в реальном времени)
+## Quick Start
 
-**Инфраструктура:**
-- CI/CD для автоматической сборки и деплоя
-- Мониторинг и логирование
-- Crash reporting (Sentry или аналог)
+### Prerequisites
 
-### 5.2 Архитектура приложения
+| Requirement | Version |
+|-------------|---------|
+| **Node.js** | v18.0.0 or higher |
+| **npm** | v9.0.0 or higher |
+| **Expo CLI** | Latest |
+| **iOS Simulator** | Xcode 15+ (for iOS development) |
+| **Android Emulator** | Android Studio (for Android development) |
+| **Watchman** | Latest (macOS only) |
 
-```
-┌─────────────────────────────────────────┐
-│           VIEW LAYER                    │
-│  (Экраны и UI компоненты)               │
-│  - Screens                              │
-│  - Components                           │
-│  - Navigation                           │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│          DOMAIN LAYER                   │
-│  (Бизнес-логика и сущности)             │
-│  - Entities (Product, Portfolio, Chat)  │
-│  - Use Cases / Services                 │
-│  - Business Logic                       │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│          ADAPTERS LAYER                 │
-│  (Интеграция с бэкендом)                │
-│  - API Clients                          │
-│  - Data Mappers                         │
-│  - Storage Adapters                     │
-└─────────────────────────────────────────┘
+### Quick Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/asset-management-app.git
+cd asset-management-app
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm start
+
+# Run on iOS simulator
+npm run ios
+
+# Run on Android emulator
+npm run android
 ```
 
-**Описание слоёв:**
+### Basic Usage
 
-1. **View Layer** - Отвечает за отображение UI и взаимодействие с пользователем
-   - Не содержит бизнес-логики
-   - Делегирует действия в Domain Layer
+```typescript
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { TaskScreen } from '@features/tasks';
+import { PortfolioScreen } from '@features/portfolio';
+import { ChatScreen } from '@features/chat';
+import { ProfileScreen } from '@features/profile';
 
-2. **Domain Layer** - Содержит бизнес-логику и сущности
-   - Независим от UI и внешних сервисов
-   - Определяет правила и логику приложения
+const Tab = createBottomTabNavigator();
 
-3. **Adapters Layer** - Интегрирует Domain с внешним миром
-   - API клиенты для взаимодействия с бэкендом
-   - Мапперы данных
-   - Локальное хранилище
+function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen name="Portfolio" component={PortfolioScreen} />
+        <Tab.Screen name="Tasks" component={TaskScreen} />
+        <Tab.Screen name="Chat" component={ChatScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
+```
 
 ---
 
-## 6. Экраны приложения
+## Installation
 
-### 6.1 Структура навигации
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/your-org/asset-management-app.git
+cd asset-management-app
+```
+
+### Step 2: Install Dependencies
+
+```bash
+# Install all dependencies
+npm install
+
+# Or install with specific package manager
+yarn install
+# or
+pnpm install
+```
+
+### Step 3: Environment Configuration
+
+Create a `.env` file in the project root:
+
+```bash
+# Copy example environment file
+cp .env.example .env
+```
+
+Configure the following environment variables:
+
+```env
+# API Configuration
+API_BASE_URL=https://api.assetmanagement.com
+API_TIMEOUT=30000
+
+# Authentication
+AUTH_CLIENT_ID=your_client_id
+AUTH_REDIRECT_URI=your_redirect_uri
+
+# Feature Flags
+ENABLE_CHAT=true
+ENABLE_NOTIFICATIONS=true
+
+# Analytics (Optional)
+ANALYTICS_KEY=your_analytics_key
+```
+
+### Step 4: Configure NativeWind (Tailwind CSS)
+
+The project uses NativeWind for styling. Configuration is in `tailwind.config.js`:
+
+```javascript
+module.exports = {
+  content: ['./App.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50: '#EFF6FF',
+          500: '#3B82F6',
+          600: '#2563EB',
+          // ... full color scale
+        },
+        // ... additional colors
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+### Step 5: iOS Setup (macOS only)
+
+```bash
+# Install iOS pods
+cd ios
+pod install
+cd ..
+```
+
+### Step 6: Run the Application
+
+```bash
+# Start Expo development server
+npm start
+
+# Run on iOS
+npm run ios
+
+# Run on Android
+npm run android
+
+# Run on web
+npm run web
+```
+
+---
+
+## Usage
+
+### Common Use Cases
+
+#### 1. Task Management
+
+View and complete tasks assigned by your manager:
+
+```typescript
+import { TaskScreen } from '@features/tasks';
+
+// Navigate to TaskScreen
+navigation.navigate('Tasks');
+
+// Filter tasks by status
+<TaskScreen initialFilter="pending" />
+
+// Handle task completion
+const handleTaskComplete = async (taskId: string) => {
+  await tasksApi.complete(taskId);
+  queryClient.invalidateQueries(['tasks']);
+};
+```
+
+#### 2. Portfolio Viewing
+
+Access portfolio performance and details:
+
+```typescript
+import { PortfolioScreen } from '@features/portfolio';
+
+// Navigate to Portfolio
+navigation.navigate('Portfolio');
+
+// Fetch portfolio data
+const { data: portfolio } = usePortfolio();
+
+// Display performance metrics
+<PortfolioCard 
+  totalValue={portfolio.totalValue}
+  returnPercentage={portfolio.returnPercentage}
+  riskLevel={portfolio.riskLevel}
+/>
+```
+
+#### 3. Manager Communication
+
+Chat with your personal manager:
+
+```typescript
+import { ChatScreen } from '@features/chat';
+
+// Navigate to Chat
+navigation.navigate('Chat', { managerId: 'manager-123' });
+
+// Send message
+const handleSendMessage = async (message: string) => {
+  await chatApi.sendMessage({
+    managerId,
+    content: message,
+  });
+};
+```
+
+#### 4. Document Submission
+
+Submit required documents:
+
+```typescript
+import { DocumentUploadScreen } from '@features/documents';
+
+// Navigate to document upload
+navigation.navigate('DocumentUpload', { taskId: 'task-456' });
+
+// Upload document
+const handleUpload = async (file: File) => {
+  await documentsApi.upload({
+    taskId,
+    file,
+    type: 'tax_document',
+  });
+};
+```
+
+### Configuration Options
+
+#### Theme Configuration
+
+```typescript
+// src/config/theme.ts
+import { tokens } from './design-tokens';
+
+export const lightTheme = {
+  colors: {
+    background: '#FFFFFF',
+    surface: '#F9FAFB',
+    text: {
+      primary: '#111827',
+      secondary: '#6B7280',
+    },
+  },
+};
+
+export const darkTheme = {
+  colors: {
+    background: '#030712',
+    surface: '#111827',
+    text: {
+      primary: '#F3F4F6',
+      secondary: '#9CA3AF',
+    },
+  },
+};
+```
+
+#### API Configuration
+
+```typescript
+// src/config/api.ts
+export const apiConfig = {
+  baseURL: process.env.API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+};
+
+// API Client setup
+export const apiClient = axios.create(apiConfig);
+```
+
+---
+
+## Project Structure
 
 ```
-App
-├── Auth Stack (неавторизованный пользователь)
-│   ├── Login Screen
-│   └── Forgot Password Screen
+asset-management-app/
+├── src/
+│   ├── app/                    # App-level configuration
+│   │   ├── navigation/         # Navigation structure
+│   │   └── providers/          # Context providers
+│   │
+│   ├── features/               # Feature-based modules
+│   │   ├── tasks/              # Task management feature
+│   │   │   ├── api/            # API functions
+│   │   │   ├── components/     # Feature components
+│   │   │   ├── hooks/          # Custom hooks
+│   │   │   ├── screens/        # Screen components
+│   │   │   ├── types/          # TypeScript types
+│   │   │   └── utils/          # Utility functions
+│   │   ├── portfolio/          # Portfolio feature
+│   │   ├── chat/               # Chat feature
+│   │   ├── products/           # Products catalog
+│   │   └── profile/            # Profile management
+│   │
+│   ├── shared/                 # Shared resources
+│   │   ├── ui/                 # Shared UI components
+│   │   ├── api/                # Shared API utilities
+│   │   ├── hooks/              # Shared hooks
+│   │   └── utils/              # Shared utilities
+│   │
+│   └── config/                 # Configuration files
+│       ├── theme.ts            # Theme configuration
+│       └── constants.ts        # App constants
 │
-└── Main Stack (авторизованный пользователь)
-    ├── Tab Navigator
-    │   ├── Products Tab
-    │   │   ├── Products List Screen
-    │   │   └── Product Detail Screen
-    │   │
-    │   ├── Portfolio Tab
-    │   │   ├── Portfolio Overview Screen
-    │   │   ├── Asset Detail Screen
-    │   │   └── Transaction History Screen
-    │   │
-    │   ├── Chat Tab
-    │   │   ├── Chats List Screen
-    │   │   └── Chat Detail Screen
-    │   │
-    │   └── Profile Tab
-    │       ├── Profile Screen
-    │       ├── Settings Screen
-    │       └── Documents Screen
-    │
-    └── Modals
-        ├── Notifications Screen
-        └── Document Viewer Screen
+├── __tests__/                  # Test files
+│   └── features/
+│       └── tasks/              # Task feature tests
+│           ├── components/     # Component tests
+│           ├── hooks/          # Hook tests
+│           ├── utils/          # Utility tests
+│           └── screens/        # Screen tests
+│
+├── docs/                       # Documentation
+│   ├── design-system.md        # Design system
+│   ├── ui/                     # UI specifications
+│   ├── api/                    # API documentation
+│   └── adr/                    # Architecture decisions
+│
+├── App.tsx                     # App entry point
+├── app.json                    # Expo configuration
+├── package.json                # Dependencies
+├── tsconfig.json               # TypeScript config
+├── tailwind.config.js          # Tailwind config
+└── README.md                   # This file
 ```
 
-### 6.2 Описание ключевых экранов
+### Feature Architecture
 
-**Screen 1: Login**
-- Форма входа (email/телефон + пароль)
-- Кнопка "Забыли пароль?"
-- Опция биометрического входа
+Each feature follows a consistent structure:
 
-**Screen 2: Products List**
-- Поиск по продуктам
-- Фильтры (тип стратегии, риск, доходность)
-- Список карточек продуктов
-- Пульсация при загрузке
-
-**Screen 3: Product Detail**
-- Полная информация о продукте
-- Графики доходности
-- Условия и ограничения
-- Кнопка "Связаться с менеджером"
-
-**Screen 4: Portfolio Overview**
-- Общая стоимость портфеля
-- График динамики
-- Круговая диаграмма структуры
-- Список активов
-
-**Screen 5: Chat Detail**
-- История сообщений
-- Поле ввода сообщения
-- Кнопка прикрепления файлов
-- Статусы сообщений
+```
+features/[feature]/
+├── api/           → API layer (React Query integration)
+├── components/    → Presentational components
+├── hooks/         → Custom React hooks
+├── screens/       → Screen components
+├── types/         → TypeScript definitions
+├── utils/         → Helper functions
+└── index.ts       → Public API exports
+```
 
 ---
 
-## 7. Интеграции
+## Documentation
 
-### 7.1 Backend API
-- RESTful API для основных операций
-- WebSocket для чата в реальном времени
-- Аутентификация через JWT токены
+### Design System
 
-### 7.2 Push Notifications
-- Firebase Cloud Messaging (FCM) для Android
-- Apple Push Notification Service (APNs) для iOS
+- **[Design System](docs/design-system.md)** - Complete design system including colors, typography, spacing, components, and accessibility guidelines
 
-### 7.3 Analytics (опционально)
-- Отслеживание поведения пользователей
-- Аналитика использования функций
-- Crash reporting
+### UI Specifications
 
----
+- **[TaskScreen](docs/ui/screens/TaskScreen.md)** - Detailed UI specification for the task management screen
 
-## 8. Критерии успеха (Success Criteria)
+### API Documentation
 
-### 8.1 MVP критерии
-- ✅ Приложение успешно компилируется и запускается на iOS и Android
-- ✅ Работает аутентификация с базовыми механизмами безопасности
-- ✅ Отображается витрина продуктов с детальной информацией
-- ✅ Корректно показывается портфель активов с актуальными данными
-- ✅ Работает чат с менеджером в режиме реального времени
-- ✅ Push-уведомления приходят своевременно
-- ✅ Код покрыт unit тестами не менее 70%
-- ✅ Нет критических багов
+- **[API Reference](docs/api/)** - API endpoints and integration guide (coming soon)
 
-### 8.2 Бизнес-критерии (для оценки после запуска)
-- DAU (Daily Active Users) - целевой показатель: 40% от базы клиентов
-- Среднее время сессии - не менее 3 минут
-- Retention rate на 30 день - не менее 60%
-- App Store rating - не менее 4.5 звезд
-- Количество обращений в чат - не менее 2 в неделю на активного пользователя
-- Уменьшение звонков в офис на 30% за первые 3 месяца
+### Architecture
 
-### 8.3 Технические критерии
-- Время загрузки приложения < 3 секунд
-- Crash-free rate > 99%
-- API response time < 500ms (p95)
-- Доступность API > 99.5%
+- **[Architecture Overview](docs/architecture.md)** - System architecture and design patterns (coming soon)
+- **[ADR Index](docs/adr/)** - Architecture Decision Records
 
 ---
 
-## 9. Выходящее за рамки (Out of Scope)
+## Contributing
 
-### 9.1 Не включено в MVP
-- Самостоятельная регистрация клиентов
-- Проведение финансовых транзакций
-- Торговые функции
-- Сравнение с бенчмарками в реальном времени
-- AI-рекомендации
-- Инвестиционный калькулятор
-- Образовательный контент
-- Новостной раздел
+We welcome contributions! Please follow these guidelines:
 
-### 9.2 Не планируется в ближайшей перспективе
-- Web-версия приложения
-- Desktop приложение
-- Apple Watch / Wear OS поддержка
-- Голосовые сообщения в чате
-- Видеозвонки с менеджером
+### Development Setup
+
+1. Fork and clone the repository
+2. Install dependencies: `npm install`
+3. Create a feature branch: `git checkout -b feature/your-feature`
+4. Make your changes
+5. Run tests: `npm test`
+6. Submit a pull request
+
+### Code Standards
+
+| Standard | Tool | Config |
+|----------|------|--------|
+| **Linting** | ESLint | `.eslintrc.js` |
+| **Formatting** | Prettier | `.prettierrc` |
+| **Type Checking** | TypeScript | `tsconfig.json` |
+| **Testing** | Jest | `jest.config.js` |
+
+### Code Style Guidelines
+
+```typescript
+// Use functional components with TypeScript
+export const MyComponent: React.FC<MyComponentProps> = ({ prop }) => {
+  // Hooks at the top
+  const [state, setState] = useState(initialState);
+  
+  // Event handlers
+  const handlePress = useCallback(() => {
+    // Implementation
+  }, [dependencies]);
+  
+  // Render
+  return (
+    <View className="flex-1 bg-white">
+      {/* Content */}
+    </View>
+  );
+};
+```
+
+### Testing Requirements
+
+- **Unit Tests**: Required for all components, hooks, and utilities
+- **Integration Tests**: Required for screens and complex interactions
+- **Coverage**: Minimum 70% code coverage
+- **Accessibility Tests**: Required for all interactive components
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- TaskScreen.test.tsx
+```
+
+### Commit Convention
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add new task filter functionality
+fix: resolve pagination reset bug
+docs: update README installation steps
+test: add tests for TaskItem component
+refactor: simplify task formatters
+style: format code with Prettier
+chore: update dependencies
+```
+
+### Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes with clear commit messages
+3. Add/update tests for your changes
+4. Update documentation if needed
+5. Ensure all tests pass: `npm test`
+6. Ensure no lint errors: `npm run lint`
+7. Submit PR with description linking to relevant issues
+
+### Branch Naming
+
+| Type | Pattern |
+|------|---------|
+| **Feature** | `feature/issue-number-description` |
+| **Bug Fix** | `fix/issue-number-description` |
+| **Refactor** | `refactor/issue-number-description` |
+| **Docs** | `docs/issue-number-description` |
 
 ---
 
-## 10. Риски и митигация
+## Accessibility
 
-| Риск | Вероятность | Влияние | Митигация |
-|------|-------------|---------|-----------|
-| Проблемы с интеграцией бэкенда | Средняя | Высокое | Раннее тестирование API, mock-данные для разработки |
-| Сложности с WebSocket (чат) | Средняя | Среднее | Использование проверенных библиотек, fallback polling |
-| Проблемы безопасности | Низкая | Критическое | Аудит безопасности, pen-testing перед запуском |
-| Проблемы с производительностью | Средняя | Среднее | Оптимизация с самого начала, lazy loading |
-| Отсутствие дизайн-системы | Средняя | Низкое | Использование shadcn/ui, создание базовых компонентов |
+This application is built with accessibility as a first-class concern:
 
----
+### WCAG 2.1 AA Compliance
 
-## 11. Зависимости
+- ✅ Color contrast ratios meet WCAG AA standards (4.5:1 for text)
+- ✅ All interactive elements have visible focus indicators
+- ✅ Touch targets are minimum 44x44 points
+- ✅ Screen reader support with proper ARIA labels
+- ✅ Keyboard navigation support
+- ✅ Reduced motion support
 
-### 11.1 Внешние зависимости
-- Готовность backend API
-- Предоставление тестовых учётных данных
-- Доступ к тестовым данным (продукты, портфели)
-- Согласование дизайна UI/UX
+### Testing Accessibility
 
-### 11.2 Технические зависимости
-- React Native экосистема
-- Node.js backend
-- CI/CD infrastructure
-- App Store и Google Play аккаунты
+```bash
+# Run accessibility tests
+npm test -- --testPathPattern=accessibility
+
+# Manual testing checklist available in:
+# docs/design-system.md#accessibility
+```
 
 ---
 
-## 12. Временные рамки и milestones
+## Performance
 
-### Phase 1: MVP (8-10 недель)
-- **Недели 1-2:** Настройка проекта, архитектура, базовые компоненты
-- **Недели 3-4:** Аутентификация, навигация, базовый UI
-- **Недели 5-6:** Экраны продуктов и портфеля
-- **Недели 7-8:** Чат, push-уведомления, интеграция с backend
-- **Недели 9-10:** Тестирование, баг-фиксы, подготовка к релизу
+### Optimization Guidelines
 
-### Phase 2: Улучшения (4-6 недель после MVP)
-- Документы и отчеты
-- Расширенные настройки
-- Оптимизация производительности
-- Дополнительные аналитические функции
+- Use `FlatList` with `getItemLayout` for predictable scrolling
+- Implement `React.memo` for frequently re-rendering components
+- Use React Query caching with appropriate stale times
+- Implement pagination for large data sets
+- Lazy load features and screens
 
----
+### Performance Metrics
 
-## 13. Открытые вопросы
-
-### Требуют уточнения:
-1. **Аутентификация:** Требуется ли двухфакторная аутентификация (2FA)?
-2. **Регистрация:** Будет ли самостоятельная регистрация в будущих версиях?
-3. **Документы:** Какие типы документов должны быть доступны?
-4. **Офлайн-режим:** Насколько критична работа без интернета?
-5. **Мультиязычность:** Планируется ли поддержка английского языка?
-6. **Дизайн:** Есть ли существующий брендбук или дизайн-гайды?
-7. **Backend:** Есть ли готовый backend API или требуется разработка?
+| Metric | Target |
+|--------|--------|
+| Screen Load Time | < 1 second |
+| List Scroll | 60fps |
+| Time to Interactive | < 2 seconds |
+| Bundle Size | < 5MB |
 
 ---
 
-## 14. Приложения
+## Troubleshooting
 
-### Приложение А: Глоссарий терминов
+### Common Issues
 
-- **Управляющая компания** - организация, осуществляющая доверительное управление активами клиентов
-- **Доверительное управление** - передача активов в управление профессиональному управляющему
-- **Стратегия доверительного управления** - определённый подход к управлению активами с заданными параметрами риска и доходности
-- **Индивидуальное доверительное управление** - персонализированная стратегия управления активами под конкретного клиента
-- **Портфель активов** - совокупность активов клиента под управлением компании
-- **Персональный менеджер** - сотрудник управляющей компании, закреплённый за клиентом
+#### iOS Build Fails
 
-### Приложение Б: Ссылки на ресурсы
+```bash
+# Clean iOS build
+cd ios
+rm -rf Pods Podfile.lock
+pod install
+cd ..
+npm run ios
+```
 
-- React Native Documentation: https://reactnative.dev/
-- shadcn/ui: https://ui.shadcn.com/
-- Tailwind CSS: https://tailwindcss.com/
+#### Android Build Fails
+
+```bash
+# Clean Android build
+cd android
+./gradlew clean
+cd ..
+npm run android
+```
+
+#### Metro Bundler Issues
+
+```bash
+# Reset Metro cache
+npm start -- --reset-cache
+```
 
 ---
 
-**Документ создан:** 2026-03-31  
-**Автор:** PM Agent  
-**Версия:** 1.0  
-**Статус:** Draft
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start Expo development server |
+| `npm run ios` | Run on iOS simulator |
+| `npm run android` | Run on Android emulator |
+| `npm run web` | Run on web browser |
+| `npm test` | Run tests |
+| `npm run lint` | Run ESLint |
+| `npm run type-check` | Run TypeScript type checking |
+| `npm run build` | Build for production |
+
+---
+
+## Dependencies
+
+### Core Dependencies
+
+```json
+{
+  "react-native": "^0.73.0",
+  "expo": "~50.0.0",
+  "@react-navigation/native": "^6.0.0",
+  "@tanstack/react-query": "^5.0.0",
+  "nativewind": "^2.0.0",
+  "lucide-react-native": "^0.300.0",
+  "react-native-reanimated": "^3.0.0",
+  "date-fns": "^3.0.0"
+}
+```
+
+### Development Dependencies
+
+```json
+{
+  "typescript": "^5.0.0",
+  "jest": "^29.0.0",
+  "@testing-library/react-native": "^12.0.0",
+  "eslint": "^8.0.0",
+  "prettier": "^3.0.0"
+}
+```
+
+---
+
+## License
+
+This project is proprietary software. All rights reserved.
+
+**License Type:** Proprietary
+
+**Copyright © 2024 Asset Management Company. All rights reserved.**
+
+Unauthorized copying, modification, distribution, or use of this software is strictly prohibited without written permission from the copyright holder.
+
+---
+
+## Support
+
+For technical support or questions:
+
+- **Documentation**: [docs/](docs/)
+- **Issues**: Create an issue in the repository
+- **Email**: support@assetmanagement.com
+
+---
+
+## Changelog
+
+### Version 1.0.0 (Current)
+
+- Initial release
+- Task management feature
+- Portfolio dashboard
+- Chat functionality
+- Product catalog
+- Profile management
+- Dark mode support
+- WCAG 2.1 AA accessibility compliance
+
+---
+
+**Built with ❤️ for Asset Management Clients**
