@@ -1,1450 +1,2017 @@
-# System Design - Asset Management Client Portal
+# Technical Standards and Conventions
 
-## Document Information
-**Project:** Asset Management Client Portal  
-**Version:** 1.0  
-**Date:** 2026-03-31  
-**Author:** Software Architect  
-
----
-
-## 1. Executive Summary
-
-This document presents the comprehensive system architecture for the Asset Management Client Portal, a React Native mobile application for iOS and Android platforms. The architecture follows Clean Architecture principles with three distinct layers, ensuring scalability, maintainability, and testability.
+**Project**: Asset Management Client Portal  
+**Version**: 1.0  
+**Date**: 2025-01-18  
+**Status**: Approved
 
 ---
 
-## 2. Architecture Pattern Selection
+## Table of Contents
 
-### 2.1 Chosen Pattern: Clean Architecture (Three-Layer)
-
-**Decision Rationale:**
-
-| Criteria | Clean Architecture | MVC | MVVM | Redux Architecture |
-|----------|-------------------|-----|------|-------------------|
-| Testability | ✅ Excellent | ⚠️ Good | ✅ Excellent | ✅ Excellent |
-| Scalability | ✅ Excellent | ⚠️ Moderate | ✅ Good | ✅ Good |
-| Maintainability | ✅ Excellent | ⚠️ Moderate | ✅ Good | ⚠️ Moderate |
-| Business Logic Separation | ✅ Excellent | ❌ Poor | ✅ Good | ⚠️ Moderate |
-| Dependency Management | ✅ Excellent | ❌ Poor | ⚠️ Moderate | ⚠️ Moderate |
-| Learning Curve | ⚠️ Moderate | ✅ Easy | ✅ Easy | ⚠️ Moderate |
-| React Native Fit | ✅ Excellent | ⚠️ Moderate | ✅ Good | ✅ Excellent |
-
-**Selected Pattern:** Clean Architecture with three layers (View, Domain, Adapters)
-
-**Benefits for this project:**
-- Clear separation of concerns
-- Domain layer independent of frameworks
-- Easy to test business logic
-- Flexible API integration
-- Maintainable as features grow
-- Supports real-time features (WebSocket)
+1. [Coding Standards](#1-coding-standards)
+2. [Naming Conventions](#2-naming-conventions)
+3. [Folder Structure](#3-folder-structure)
+4. [Git Workflow](#4-git-workflow)
+5. [Testing Standards](#5-testing-standards)
+6. [Code Review Guidelines](#6-code-review-guidelines)
+7. [Documentation Standards](#7-documentation-standards)
 
 ---
 
-## 3. C4 Model - System Architecture
+## 1. Coding Standards
 
-### 3.1 Level 1: System Context Diagram
+### 1.1 TypeScript/JavaScript Standards
 
-```mermaid
-graph TB
-    subgraph "System Context"
-        Client[Client User<br/>High Net Worth Individual]
-        Manager[Asset Manager<br/>Personal Investment Advisor]
-        Admin[Company Admin<br/>Back Office Staff]
-        
-        App[Asset Management<br/>Client Portal<br/>React Native App]
-        
-        Backend[Backend API<br/>Asset Management System]
-        APNS[Apple Push<br/>Notification Service]
-        FCM[Firebase Cloud<br/>Messaging]
-        Analytics[Analytics Service<br/>Firebase/Amplitude]
-        Monitoring[Error Tracking<br/>Sentry]
-    end
-    
-    Client -->|Uses| App
-    Manager -->|Communicates via| Backend
-    Admin -->|Manages clients via| Backend
-    
-    App -->|API calls over HTTPS| Backend
-    App -->|Push notifications| APNS
-    App -->|Push notifications| FCM
-    App -->|Usage analytics| Analytics
-    App -->|Error reports| Monitoring
-    
-    Backend -.->|Triggers notifications| APNS
-    Backend -.->|Triggers notifications| FCM
-    
-    style App fill:#4A90E2,color:#fff
-    style Backend fill:#7ED321,color:#fff
-    style Client fill:#F5A623,color:#fff
-    style Manager fill:#F5A623,color:#fff
-```
+#### 1.1.1 TypeScript Configuration
 
-**Context Description:**
-
-The Asset Management Client Portal is a mobile application that enables clients to:
-- View their investment portfolio
-- Browse available investment products
-- Communicate with their personal asset manager
-- Receive notifications about portfolio changes
-
-External systems:
-- **Backend API:** Core business logic and data storage
-- **APNs/FCM:** Push notification delivery
-- **Analytics:** User behavior tracking
-- **Monitoring:** Error tracking and performance monitoring
-
----
-
-### 3.2 Level 2: Container Diagram
-
-```mermaid
-graph TB
-    subgraph "Mobile Application"
-        subgraph "View Layer"
-            Screens[Screens<br/>React Native Components]
-            Components[UI Components<br/>shadcn/ui + Tailwind]
-            Navigation[Navigation<br/>React Navigation v6]
-        end
-        
-        subgraph "Domain Layer"
-            UseCases[Use Cases<br/>Business Logic]
-            Entities[Entities<br/>Business Models]
-            Repositories[Repository Interfaces<br/>Data Contracts]
-        end
-        
-        subgraph "Adapters Layer"
-            APIClient[API Client<br/>Axios + React Query]
-            WebSocket[WebSocket Manager<br/>Socket.io Client]
-            Storage[Storage Adapter<br/>AsyncStorage + Keychain]
-            Biometric[Biometric Adapter<br/>Face ID/Touch ID]
-            PushAdapter[Push Notification Adapter<br/>Firebase Messaging]
-        end
-        
-        State[State Management<br/>Zustand]
-        I18n[Localization<br/>react-i18next]
-    end
-    
-    subgraph "External Systems"
-        Backend[Backend API<br/>REST + WebSocket]
-        SecureStorage[Secure Storage<br/>Keychain/Keystore]
-        DeviceBiometric[Device Biometric<br/>Face ID/Touch ID]
-        PushService[Push Services<br/>APNs/FCM]
-    end
-    
-    Screens --> Components
-    Screens --> Navigation
-    Screens --> UseCases
-    Screens --> State
-    Screens --> I18n
-    
-    UseCases --> Entities
-    UseCases --> Repositories
-    
-    APIClient --> Repositories
-    WebSocket --> Repositories
-    Storage --> Repositories
-    Biometric --> Repositories
-    PushAdapter --> Repositories
-    
-    APIClient --> Backend
-    WebSocket --> Backend
-    Storage --> SecureStorage
-    Biometric --> DeviceBiometric
-    PushAdapter --> PushService
-    
-    style State fill:#E6F3FF,stroke:#4A90E2
-    style UseCases fill:#E6F3FF,stroke:#4A90E2
-    style APIClient fill:#E6F3FF,stroke:#4A90E2
-```
-
-**Container Description:**
-
-| Container | Technology | Responsibility |
-|-----------|------------|----------------|
-| **View Layer** | React Native + TypeScript | UI presentation, user interaction, navigation |
-| **Domain Layer** | TypeScript (framework-agnostic) | Business logic, entities, use cases |
-| **Adapters Layer** | TypeScript + Libraries | External integrations, data persistence, platform APIs |
-| **State Management** | Zustand | Global application state |
-| **Localization** | react-i18next | Internationalization (Russian for MVP) |
-
----
-
-### 3.3 Level 3: Component Diagram
-
-```mermaid
-graph TB
-    subgraph "View Layer Components"
-        subgraph "Authentication"
-            LoginScreen[Login Screen]
-            ForgotPasswordScreen[Forgot Password Screen]
-            BiometricPrompt[Biometric Prompt]
-        end
-        
-        subgraph "Products"
-            ProductListScreen[Product List Screen]
-            ProductDetailsScreen[Product Details Screen]
-            InterestModal[Interest Expression Modal]
-        end
-        
-        subgraph "Portfolio"
-            PortfolioScreen[Portfolio Overview Screen]
-            PositionList[Position List Component]
-            TransactionHistory[Transaction History Screen]
-            PerformanceChart[Performance Chart]
-            AllocationChart[Allocation Chart]
-        end
-        
-        subgraph "Chat"
-            ChatScreen[Chat Screen]
-            MessageList[Message List]
-            MessageInput[Message Input]
-            ManagerStatus[Manager Status]
-        end
-        
-        subgraph "Common"
-            ProfileScreen[Profile Screen]
-            SettingsScreen[Settings Screen]
-            ErrorBoundary[Error Boundary]
-            LoadingStates[Loading States]
-        end
-    end
-    
-    subgraph "Domain Layer Components"
-        subgraph "Authentication Domain"
-            AuthUseCases[Auth Use Cases<br/>Login, Logout, Refresh]
-            SessionManager[Session Manager<br/>Token Lifecycle]
-            AuthEntities[Auth Entities<br/>User, Session, Credentials]
-        end
-        
-        subgraph "Product Domain"
-            ProductUseCases[Product Use Cases<br/>GetProducts, GetDetails, ExpressInterest]
-            ProductEntities[Product Entities<br/>Product, ProductCategory]
-        end
-        
-        subgraph "Portfolio Domain"
-            PortfolioUseCases[Portfolio Use Cases<br/>GetPortfolio, GetPositions, GetTransactions]
-            PortfolioEntities[Portfolio Entities<br/>Portfolio, Position, Transaction]
-        end
-        
-        subgraph "Chat Domain"
-            ChatUseCases[Chat Use Cases<br/>SendMessage, GetHistory, Subscribe]
-            ChatEntities[Chat Entities<br/>Message, Conversation, Manager]
-        end
-    end
-    
-    subgraph "Adapters Layer Components"
-        subgraph "API Clients"
-            AuthAPI[Auth API Client]
-            ProductAPI[Product API Client]
-            PortfolioAPI[Portfolio API Client]
-            ChatAPI[Chat API Client]
-        end
-        
-        subgraph "Infrastructure"
-            HTTPClient[HTTP Client<br/>Axios + Interceptors]
-            WSService[WebSocket Service<br/>Socket.io]
-            CacheService[Cache Service<br/>AsyncStorage]
-            SecureStore[Secure Storage<br/>Keychain/Keystore]
-            PushService[Push Notification Service]
-            BiometricService[Biometric Service]
-        end
-        
-        subgraph "Repositories"
-            AuthRepo[Auth Repository]
-            ProductRepo[Product Repository]
-            PortfolioRepo[Portfolio Repository]
-            ChatRepo[Chat Repository]
-        end
-    end
-    
-    LoginScreen --> AuthUseCases
-    ProductListScreen --> ProductUseCases
-    PortfolioScreen --> PortfolioUseCases
-    ChatScreen --> ChatUseCases
-    
-    AuthUseCases --> AuthRepo
-    ProductUseCases --> ProductRepo
-    PortfolioUseCases --> PortfolioRepo
-    ChatUseCases --> ChatRepo
-    
-    AuthRepo --> AuthAPI
-    AuthRepo --> SecureStore
-    AuthRepo --> BiometricService
-    
-    ProductRepo --> ProductAPI
-    ProductRepo --> CacheService
-    
-    PortfolioRepo --> PortfolioAPI
-    PortfolioRepo --> CacheService
-    
-    ChatRepo --> ChatAPI
-    ChatRepo --> WSService
-    
-    AuthAPI --> HTTPClient
-    ProductAPI --> HTTPClient
-    PortfolioAPI --> HTTPClient
-    ChatAPI --> HTTPClient
-```
-
----
-
-## 4. System Layers
-
-### 4.1 View Layer (Presentation)
-
-**Purpose:** Handle UI rendering, user interactions, and navigation.
-
-**Components:**
-
-| Category | Components | Responsibilities |
-|----------|------------|------------------|
-| **Screens** | LoginScreen, ProductListScreen, PortfolioScreen, ChatScreen | Container components, orchestrate UI |
-| **UI Components** | Button, Input, Card, Modal, Chart | Reusable presentational components |
-| **Navigation** | TabNavigator, StackNavigator, DeepLinkHandler | Navigation and routing |
-| **Hooks** | useAuth, useProducts, usePortfolio, useChat | View-model logic, state access |
-| **HOCs** | withAuth, withErrorBoundary, withLoading | Cross-cutting concerns |
-
-**Technologies:**
-- React Native (UI framework)
-- React Navigation v6 (navigation)
-- Tailwind CSS / twrnc (styling)
-- shadcn/ui (component library)
-
-**Design Principles:**
-- Components are stateless (mostly)
-- State managed by hooks and Zustand
-- No business logic in components
-- Optimistic UI updates for chat
-
-### 4.2 Domain Layer (Business Logic)
-
-**Purpose:** Contain business logic, rules, and entities.
-
-**Components:**
-
-| Category | Components | Responsibilities |
-|----------|------------|------------------|
-| **Entities** | User, Session, Product, Portfolio, Position, Message | Business models with behavior |
-| **Use Cases** | LoginUseCase, GetProductsUseCase, SendMessageUseCase | Application-specific business rules |
-| **Repository Interfaces** | IAuthRepository, IProductRepository, IPortfolioRepository | Data access contracts |
-| **Value Objects** | Credentials, Money, Percentage | Immutable value objects |
-| **Services** | ValidationService, CalculationService | Domain services |
-
-**Technologies:**
-- Pure TypeScript (no framework dependencies)
-- Dependency injection pattern
-
-**Design Principles:**
-- No external dependencies
-- Framework-agnostic
-- Pure business logic
-- Unit testable
-- Single responsibility
-
-**Entity Examples:**
-
-```typescript
-// Domain Entity Example
-export class Portfolio {
-  constructor(
-    public readonly id: string,
-    public readonly totalValue: Money,
-    public readonly positions: Position[],
-    public readonly performance: Performance,
-    public readonly lastUpdated: Date
-  ) {}
-  
-  get totalPerformancePercentage(): Percentage {
-    return this.performance.percentage;
-  }
-  
-  getPositionByAsset(assetId: string): Position | undefined {
-    return this.positions.find(p => p.asset.id === assetId);
-  }
-  
-  calculateAllocation(): AssetAllocation[] {
-    // Business logic for allocation calculation
-  }
-  
-  isStale(maxAgeMinutes: number): boolean {
-    const now = new Date();
-    const ageMs = now.getTime() - this.lastUpdated.getTime();
-    return ageMs > maxAgeMinutes * 60 * 1000;
-  }
-}
-```
-
-**Use Case Example:**
-
-```typescript
-// Domain Use Case Example
-export class GetPortfolioUseCase {
-  constructor(
-    private readonly portfolioRepository: IPortfolioRepository,
-    private readonly cacheService: ICacheService
-  ) {}
-  
-  async execute(params: GetPortfolioParams): Promise<Result<Portfolio, PortfolioError>> {
-    // Check cache first
-    const cached = await this.cacheService.get<Portfolio>('portfolio');
-    if (cached && !cached.isStale(5)) {
-      return Result.ok(cached);
+```json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ES2020"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@domain/*": ["src/domain/*"],
+      "@adapters/*": ["src/adapters/*"],
+      "@view/*": ["src/view/*"],
+      "@shared/*": ["src/shared/*"],
+      "@state/*": ["src/state/*"],
+      "@i18n/*": ["src/i18n/*"],
+      "@di/*": ["src/di/*"]
     }
-    
-    // Fetch from repository
-    const result = await this.portfolioRepository.getPortfolio(params.userId);
-    
-    if (result.isSuccess()) {
-      // Update cache
-      await this.cacheService.set('portfolio', result.value, 300); // 5 minutes
-    }
-    
-    return result;
   }
 }
 ```
 
-### 4.3 Adapters Layer (Infrastructure)
-
-**Purpose:** Implement interfaces, integrate with external systems.
-
-**Components:**
-
-| Category | Components | Responsibilities |
-|----------|------------|------------------|
-| **API Clients** | AuthAPIClient, ProductAPIClient, PortfolioAPIClient, ChatAPIClient | HTTP API communication |
-| **Repositories** | AuthRepository, ProductRepository, PortfolioRepository, ChatRepository | Implement domain interfaces |
-| **Storage** | AsyncStorageAdapter, SecureStorageAdapter, CacheAdapter | Local data persistence |
-| **Platform** | BiometricAdapter, PushNotificationAdapter, FileSystemAdapter | Platform-specific APIs |
-| **WebSocket** | WebSocketManager, MessageQueue, ConnectionMonitor | Real-time communication |
-
-**Technologies:**
-- Axios (HTTP client)
-- Socket.io Client (WebSocket)
-- React Native Keychain (secure storage)
-- AsyncStorage (local storage)
-- Firebase Messaging (push notifications)
-
-**Design Principles:**
-- Implement domain interfaces
-- Handle external system errors
-- Map external data to domain entities
-- Retry and recovery logic
-
----
-
-## 5. Data Flow Architecture
-
-### 5.1 Request Flow (Read Operations)
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Screen
-    participant H as Hook
-    participant UC as Use Case
-    participant R as Repository
-    participant C as Cache
-    participant API as API Client
-    participant B as Backend
-    
-    U->>S: View Portfolio
-    S->>H: usePortfolio().getPortfolio()
-    H->>UC: GetPortfolioUseCase.execute()
-    
-    UC->>C: Check cache
-    
-    alt Cache Hit (fresh)
-        C-->>UC: Return cached data
-    else Cache Miss or Stale
-        UC->>R: getPortfolio()
-        R->>API: GET /portfolio
-        API->>B: HTTP Request
-        B-->>API: Response
-        API-->>R: Portfolio DTO
-        R-->>UC: Portfolio Entity
-        UC->>C: Update cache
-    end
-    
-    UC-->>H: Result<Portfolio>
-    H-->>S: Portfolio State
-    S-->>U: Render UI
-```
-
-### 5.2 Command Flow (Write Operations)
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Screen
-    participant H as Hook
-    participant UC as Use Case
-    participant R as Repository
-    participant API as API Client
-    participant B as Backend
-    participant Q as Offline Queue
-    
-    U->>S: Send Message
-    S->>H: useChat().sendMessage()
-    H->>UC: SendMessageUseCase.execute()
-    
-    alt Online
-        UC->>R: sendMessage()
-        R->>API: POST /chat/messages
-        API->>B: HTTP Request
-        B-->>API: Message ID
-        API-->>R: Message Entity
-        R-->>UC: Result<Message>
-    else Offline
-        UC->>Q: Queue message
-        Q-->>UC: Queued message ID
-        Note over UC: Return optimistic result
-    end
-    
-    UC-->>H: Result<Message>
-    H->>H: Update UI (optimistic)
-    H-->>S: Message sent
-    S-->>U: Show message in chat
-    
-    Note over Q: When online again
-    Q->>UC: Process queued messages
-    UC->>R: sendMessage()
-    R->>API: POST /chat/messages
-    API->>B: HTTP Request
-    B-->>API: Confirmation
-    API-->>R: Message Entity
-    R-->>UC: Result<Message>
-    UC->>H: Update with server confirmation
-```
-
-### 5.3 Real-Time Flow (WebSocket)
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Chat Screen
-    participant H as useChat Hook
-    participant WSM as WebSocket Manager
-    participant Q as Message Queue
-    participant B as Backend
-    
-    U->>S: Open Chat Screen
-    S->>H: useEffect()
-    H->>WSM: connect()
-    WSM->>B: WebSocket Connection
-    
-    alt Connection Success
-        B-->>WSM: Connection ACK
-        WSM->>WSM: Start heartbeat
-        WSM-->>H: Connected state
-        
-        loop Heartbeat
-            WSM->>B: Ping
-            B-->>WSM: Pong
-        end
-        
-        B->>WSM: New Message Event
-        WSM-->>H: onMessage(event)
-        H->>H: Update messages state
-        H-->>S: Re-render with new message
-        S-->>U: Display message
-        
-    else Connection Failed
-        B-->>WSM: Connection Error
-        WSM->>WSM: Retry with backoff
-        WSM-->>H: Reconnecting state
-        H-->>S: Show reconnecting indicator
-    end
-    
-    U->>S: Close Chat Screen
-    S->>H: useEffect cleanup
-    H->>WSM: disconnect()
-    WSM->>B: Close WebSocket
-```
-
-### 5.4 Authentication Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant S as Login Screen
-    participant H as useAuth Hook
-    participant UC as LoginUseCase
-    participant R as AuthRepository
-    participant API as AuthAPIClient
-    participant SS as Secure Storage
-    participant B as Backend
-    
-    U->>S: Enter credentials
-    U->>S: Tap Login
-    S->>H: login(credentials)
-    H->>UC: execute(credentials)
-    UC->>R: authenticate(credentials)
-    R->>API: POST /auth/login
-    
-    alt Valid Credentials
-        API->>B: Request
-        B-->>API: { accessToken, refreshToken, user }
-        API-->>R: AuthResponse DTO
-        R->>SS: Store tokens securely
-        R-->>UC: Session Entity
-        UC-->>H: Result<Session>
-        H->>H: Update auth state
-        H-->>S: Auth success
-        S->>S: Navigate to Home
-    else Invalid Credentials
-        API->>B: Request
-        B-->>API: 401 Unauthorized
-        API-->>R: AuthError
-        R-->>UC: Result.error(AuthError)
-        UC-->>H: Result.error
-        H-->>S: Auth failure
-        S-->>U: Show error message
-    end
-```
-
----
-
-## 6. State Management Architecture
-
-### 6.1 State Management Strategy
-
-**Chosen Approach:** Zustand + React Query
-
-**Rationale:**
-
-| Criteria | Zustand | Redux Toolkit | Context API |
-|----------|---------|---------------|-------------|
-| Bundle Size | ✅ Tiny (1KB) | ⚠️ Moderate (11KB) | ✅ Built-in |
-| Learning Curve | ✅ Easy | ⚠️ Moderate | ✅ Easy |
-| TypeScript Support | ✅ Excellent | ✅ Excellent | ✅ Good |
-| DevTools | ✅ Good | ✅ Excellent | ❌ None |
-| Performance | ✅ Excellent | ✅ Good | ⚠️ Re-render issues |
-| Boilerplate | ✅ Minimal | ⚠️ Moderate | ✅ Minimal |
-| React Native Fit | ✅ Excellent | ✅ Excellent | ✅ Excellent |
-
-**State Categories:**
-
-| State Type | Scope | Management | Examples |
-|------------|-------|------------|----------|
-| **Server State** | Cached API data | React Query | Products, Portfolio, Messages |
-| **Client State** | Global UI state | Zustand | Auth session, Navigation state |
-| **Form State** | Local to screen | React Hook Form | Login form, Interest form |
-| **UI State** | Local to component | useState | Modal visibility, Loading states |
-
-### 6.2 Zustand Store Structure
+#### 1.1.2 General TypeScript Rules
 
 ```typescript
-// Auth Store
-interface AuthState {
-  user: User | null;
-  session: Session | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  
-  // Actions
-  login: (credentials: Credentials) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-  setUser: (user: User) => void;
+// ✅ GOOD: Explicit types for function parameters and return values
+function calculatePortfolioValue(positions: Position[]): number {
+  return positions.reduce((sum, pos) => sum + pos.value, 0);
 }
 
-// Navigation Store
-interface NavigationState {
-  currentTab: TabType;
-  previousScreen: string | null;
-  
-  // Actions
-  setCurrentTab: (tab: TabType) => void;
+// ❌ BAD: Implicit any
+function calculatePortfolioValue(positions) {
+  return positions.reduce((sum, pos) => sum + pos.value, 0);
 }
 
-// UI Store
-interface UIState {
-  isOnline: boolean;
-  theme: 'light' | 'dark';
-  language: 'ru' | 'en';
-  
-  // Actions
-  setOnlineStatus: (isOnline: boolean) => void;
+// ✅ GOOD: Use interfaces for object shapes
+interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  manager?: ManagerInfo;
+}
+
+// ✅ GOOD: Use type for unions and computed types
+type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
+type PortfolioActions = ActionType<typeof portfolioActions>;
+
+// ✅ GOOD: Readonly for immutable data
+interface Product {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly minInvestment: number;
+}
+
+// ✅ GOOD: Use const assertions for literals
+const ROUTES = {
+  HOME: 'Home',
+  PORTFOLIO: 'Portfolio',
+  PRODUCTS: 'Products',
+  CHAT: 'Chat',
+  PROFILE: 'Profile',
+} as const;
+
+// ✅ GOOD: Nullish coalescing for defaults
+const displayName = user.name ?? 'Guest';
+
+// ❌ BAD: Using || with falsy values
+const count = value || 0; // Incorrect if value is 0
+const count = value ?? 0; // Correct
+
+// ✅ GOOD: Optional chaining for nested properties
+const managerName = user?.manager?.name;
+
+// ✅ GOOD: Discriminated unions for state
+type LoadingState = { status: 'loading' };
+type SuccessState<T> = { status: 'success'; data: T };
+type ErrorState = { status: 'error'; error: Error };
+type AsyncState<T> = LoadingState | SuccessState<T> | ErrorState;
+```
+
+#### 1.1.3 ES6+ Features
+
+```typescript
+// ✅ GOOD: Destructuring with defaults
+const { 
+  title, 
+  subtitle = '', 
+  onPress, 
+  disabled = false 
+} = props;
+
+// ✅ GOOD: Object shorthand
+const config = {
+  title,
+  onPress,
+  disabled,
+};
+
+// ✅ GOOD: Spread for immutable updates
+const updatedPortfolio = {
+  ...portfolio,
+  lastUpdated: new Date(),
+};
+
+// ✅ GOOD: Array methods over loops
+const activePositions = positions.filter(p => p.isActive);
+const totalValue = positions.reduce((sum, p) => sum + p.value, 0);
+const positionMap = new Map(positions.map(p => [p.id, p]));
+
+// ✅ GOOD: Template literals
+const fullName = `${user.firstName} ${user.lastName}`;
+const apiUrl = `${API_BASE_URL}/portfolio/${portfolioId}`;
+
+// ✅ GOOD: Async/await over raw promises
+async function fetchPortfolio(id: string): Promise<Portfolio> {
+  try {
+    const response = await apiClient.get<Portfolio>(`/portfolio/${id}`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      logger.error('Portfolio fetch failed', { id, error: error.message });
+    }
+    throw error;
+  }
+}
+
+// ❌ BAD: Promise chains
+function fetchPortfolio(id: string): Promise<Portfolio> {
+  return apiClient.get(`/portfolio/${id}`)
+    .then(response => response.data)
+    .catch(error => {
+      logger.error('Portfolio fetch failed', { id, error });
+      throw error;
+    });
 }
 ```
 
-### 6.3 React Query Configuration
+### 1.2 React Native Standards
+
+#### 1.2.1 Functional Components
 
 ```typescript
-// React Query Setup
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      retry: 3,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-    },
-    mutations: {
-      retry: 1,
-    },
-  },
+// ✅ GOOD: Component with proper typing
+interface ProductCardProps {
+  product: Product;
+  onPress: (product: Product) => void;
+  onInterestPress?: (productId: string) => void;
+  testID?: string;
+}
+
+export const ProductCard: React.FC<ProductCardProps> = memo(({
+  product,
+  onPress,
+  onInterestPress,
+  testID = 'product-card',
+}) => {
+  const { t } = useTranslation();
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handlePress = useCallback(() => {
+    onPress(product);
+  }, [product, onPress]);
+
+  const handleInterestPress = useCallback(() => {
+    onInterestPress?.(product.id);
+  }, [product.id, onInterestPress]);
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      onPressIn={() => setIsPressed(true)}
+      onPressOut={() => setIsPressed(false)}
+      testID={testID}
+    >
+      <View style={[styles.container, isPressed && styles.pressed]}>
+        <Text style={styles.name}>{product.name}</Text>
+        <Text style={styles.description}>{product.description}</Text>
+        {onInterestPress && (
+          <Button
+            title={t('products.expressInterest')}
+            onPress={handleInterestPress}
+            testID={`${testID}-interest-button`}
+          />
+        )}
+      </View>
+    </Pressable>
+  );
 });
 
-// Query Keys Structure
-const queryKeys = {
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  description: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+});
+```
+
+#### 1.2.2 Hooks Rules
+
+```typescript
+// ✅ GOOD: Custom hook with proper typing
+interface UsePortfolioResult {
+  portfolio: Portfolio | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+}
+
+export function usePortfolio(portfolioId: string): UsePortfolioResult {
+  const queryResult = useQuery({
+    queryKey: queryKeys.portfolio.detail(portfolioId),
+    queryFn: () => portfolioRepository.getPortfolio(portfolioId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  return {
+    portfolio: queryResult.data ?? null,
+    isLoading: queryResult.isLoading,
+    error: queryResult.error ?? null,
+    refetch: async () => { await queryResult.refetch(); },
+  };
+}
+
+// ✅ GOOD: Hook with cleanup
+export function useWebSocket(endpoint: string): WebSocketState {
+  const [state, setState] = useState<WebSocketState>({
+    isConnected: false,
+    lastMessage: null,
+  });
+
+  useEffect(() => {
+    const socket = io(endpoint);
+
+    socket.on('connect', () => {
+      setState(prev => ({ ...prev, isConnected: true }));
+    });
+
+    socket.on('message', (message: ChatMessage) => {
+      setState(prev => ({ ...prev, lastMessage: message }));
+    });
+
+    // Cleanup function
+    return () => {
+      socket.disconnect();
+    };
+  }, [endpoint]);
+
+  return state;
+}
+
+// ✅ GOOD: Memoized callbacks and values
+function PortfolioScreen() {
+  const { portfolio } = usePortfolio('user-portfolio');
+
+  // Memoize expensive calculations
+  const totalValue = useMemo(() => {
+    if (!portfolio) return 0;
+    return portfolio.positions.reduce((sum, p) => sum + p.value, 0);
+  }, [portfolio]);
+
+  // Memoize callbacks passed to children
+  const handlePositionPress = useCallback((position: Position) => {
+    navigation.navigate('PositionDetail', { positionId: position.id });
+  }, [navigation]);
+
+  return (
+    <View>
+      <TotalValue value={totalValue} />
+      <PositionList 
+        positions={portfolio?.positions ?? []}
+        onPositionPress={handlePositionPress}
+      />
+    </View>
+  );
+}
+```
+
+#### 1.2.3 Performance Optimization
+
+```typescript
+// ✅ GOOD: List virtualization
+import { FlashList } from '@shopify/flash-list';
+
+function ProductList({ products }: { products: Product[] }) {
+  const renderItem = useCallback(({ item }: { item: Product }) => (
+    <ProductCard product={item} />
+  ), []);
+
+  return (
+    <FlashList
+      data={products}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id}
+      estimatedItemSize={120}
+      testID="product-list"
+    />
+  );
+}
+
+// ✅ GOOD: Lazy loading screens
+const PortfolioScreen = lazy(() => import('./PortfolioScreen'));
+const ChatScreen = lazy(() => import('./ChatScreen'));
+
+// ✅ GOOD: Image optimization
+function ProductImage({ uri }: { uri: string }) {
+  return (
+    <Image
+      source={{ uri, cache: 'default' }}
+      style={styles.image}
+      resizeMode="cover"
+      defaultSource={require('./placeholder.png')}
+    />
+  );
+}
+
+// ✅ GOOD: InteractionManager for heavy operations
+useEffect(() => {
+  const task = InteractionManager.runAfterInteractions(() => {
+    // Run expensive operation after animations
+    calculatePortfolioMetrics();
+  });
+
+  return () => task.cancel();
+}, []);
+```
+
+### 1.3 React Query Standards
+
+```typescript
+// ✅ GOOD: Query key factory
+export const queryKeys = {
   auth: {
-    user: ['auth', 'user'] as const,
-    session: ['auth', 'session'] as const,
+    all: ['auth'] as const,
+    session: () => [...queryKeys.auth.all, 'session'] as const,
   },
   products: {
     all: ['products'] as const,
-    list: (filters: ProductFilters) => ['products', 'list', filters] as const,
-    detail: (id: string) => ['products', 'detail', id] as const,
+    lists: () => [...queryKeys.products.all, 'list'] as const,
+    list: (filters: ProductFilters) => 
+      [...queryKeys.products.lists(), filters] as const,
+    details: () => [...queryKeys.products.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.products.details(), id] as const,
   },
   portfolio: {
-    overview: ['portfolio', 'overview'] as const,
-    positions: ['portfolio', 'positions'] as const,
-    transactions: (filters: TransactionFilters) => ['portfolio', 'transactions', filters] as const,
+    all: ['portfolio'] as const,
+    detail: (id: string) => [...queryKeys.portfolio.all, id] as const,
+    positions: (portfolioId: string) => 
+      [...queryKeys.portfolio.all, portfolioId, 'positions'] as const,
+    transactions: (portfolioId: string) => 
+      [...queryKeys.portfolio.all, portfolioId, 'transactions'] as const,
   },
-  chat: {
-    history: ['chat', 'history'] as const,
-    manager: ['chat', 'manager'] as const,
+} as const;
+
+// ✅ GOOD: Custom mutation hook
+interface UseExpressInterestResult {
+  mutate: (productId: string) => void;
+  isPending: boolean;
+  error: Error | null;
+}
+
+export function useExpressInterest(): UseExpressInterestResult {
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useToast();
+
+  const mutation = useMutation({
+    mutationFn: (productId: string) => 
+      productRepository.expressInterest(productId),
+    onSuccess: (_, productId) => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.products.detail(productId) 
+      });
+      showSuccess(t('products.interestExpressed'));
+    },
+    onError: (error) => {
+      showError(error.message);
+    },
+  });
+
+  return {
+    mutate: mutation.mutate,
+    isPending: mutation.isPending,
+    error: mutation.error,
+  };
+}
+
+// ✅ GOOD: Optimistic update
+const mutation = useMutation({
+  mutationFn: sendMessage,
+  onMutate: async (newMessage) => {
+    // Cancel outgoing refetches
+    await queryClient.cancelQueries({ 
+      queryKey: queryKeys.chat.history(chatId) 
+    });
+
+    // Snapshot previous value
+    const previousMessages = queryClient.getQueryData(
+      queryKeys.chat.history(chatId)
+    );
+
+    // Optimistically update
+    queryClient.setQueryData(
+      queryKeys.chat.history(chatId),
+      (old: Message[] = []) => [...old, { ...newMessage, pending: true }]
+    );
+
+    return { previousMessages };
+  },
+  onError: (err, newMessage, context) => {
+    // Rollback on error
+    queryClient.setQueryData(
+      queryKeys.chat.history(chatId),
+      context?.previousMessages
+    );
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ 
+      queryKey: queryKeys.chat.history(chatId) 
+    });
+  },
+});
+```
+
+---
+
+## 2. Naming Conventions
+
+### 2.1 Files and Folders
+
+#### 2.1.1 General Rules
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| Folders | kebab-case | `product-list/`, `portfolio-view/` |
+| Components | PascalCase | `ProductCard.tsx`, `PortfolioList.tsx` |
+| Screens | PascalCase + Screen suffix | `PortfolioScreen.tsx`, `ChatScreen.tsx` |
+| Hooks | camelCase + use prefix | `usePortfolio.ts`, `useAuth.ts` |
+| Utils | camelCase | `formatters.ts`, `validators.ts` |
+| Constants | camelCase | `routes.ts`, `api-config.ts` |
+| Types | camelCase | `product.types.ts`, `portfolio.types.ts` |
+| Tests | Same as source + .test | `ProductCard.test.tsx` |
+| Styles | Same as component | `ProductCard.styles.ts` (if separate) |
+
+#### 2.1.2 Domain Layer Files
+
+```
+domain/
+├── entities/
+│   ├── Product.ts          # Entity class
+│   ├── Portfolio.ts        # Entity class
+│   └── Position.ts         # Entity class
+├── value-objects/
+│   ├── Money.ts            # Value object class
+│   ├── Percentage.ts       # Value object class
+│   └── DateRange.ts        # Value object class
+├── repositories/
+│   ├── IProductRepository.ts    # Interface (I prefix)
+│   ├── IPortfolioRepository.ts  # Interface (I prefix)
+│   └── IAuthRepository.ts       # Interface (I prefix)
+├── usecases/
+│   ├── GetProductDetails.ts     # Use case class
+│   ├── CalculatePortfolioValue.ts
+│   └── AuthenticateUser.ts
+└── services/
+    ├── PortfolioCalculator.ts   # Domain service
+    └── InvestmentValidator.ts
+```
+
+#### 2.1.3 Adapter Layer Files
+
+```
+adapters/
+├── api/
+│   ├── ApiClient.ts            # Base API client
+│   ├── ProductApi.ts           # Product API client
+│   ├── PortfolioApi.ts         # Portfolio API client
+│   └── AuthApi.ts              # Auth API client
+├── repositories/
+│   ├── ProductRepository.ts    # Implementation
+│   ├── PortfolioRepository.ts  # Implementation
+│   └── AuthRepository.ts       # Implementation
+├── storage/
+│   ├── SecureStorage.ts        # Secure storage adapter
+│   ├── AsyncStorage.ts         # Async storage adapter
+│   └── CacheStorage.ts         # Cache storage adapter
+├── websocket/
+│   └── ChatWebSocket.ts        # WebSocket adapter
+└── platform/
+    ├── BiometricsService.ts    # Platform biometrics
+    └── NotificationService.ts  # Platform notifications
+```
+
+#### 2.1.4 View Layer Files
+
+```
+view/
+├── screens/
+│   ├── portfolio/
+│   │   ├── PortfolioScreen.tsx
+│   │   ├── PortfolioScreen.styles.ts
+│   │   ├── PortfolioScreen.test.tsx
+│   │   └── index.ts           # Barrel export
+│   └── chat/
+│       ├── ChatScreen.tsx
+│       ├── components/         # Screen-specific components
+│       │   ├── MessageBubble.tsx
+│       │   └── ChatInput.tsx
+│       └── hooks/              # Screen-specific hooks
+│           └── useChatMessages.ts
+├── components/
+│   ├── common/                 # Shared components
+│   │   ├── Button/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Button.styles.ts
+│   │   │   ├── Button.test.tsx
+│   │   │   └── index.ts
+│   │   └── Card/
+│   └── domain/                 # Domain-specific components
+│       ├── ProductCard/
+│       └── PortfolioCard/
+└── navigation/
+    ├── AppNavigator.tsx
+    ├── AuthNavigator.tsx
+    └── MainNavigator.tsx
+```
+
+### 2.2 Variables and Functions
+
+#### 2.2.1 Variables
+
+```typescript
+// ✅ GOOD: camelCase for variables
+const portfolioValue = 100000;
+const isActiveUser = true;
+const productCategories = ['stocks', 'bonds', 'funds'];
+
+// ✅ GOOD: SCREAMING_SNAKE_CASE for true constants
+const API_BASE_URL = 'https://api.example.com';
+const MAX_RETRY_ATTEMPTS = 3;
+const DEFAULT_TIMEOUT_MS = 30000;
+
+// ✅ GOOD: Boolean variables with is/has/can prefixes
+const isLoading = true;
+const hasError = false;
+const canSubmit = true;
+const isAuthenticated = false;
+
+// ✅ GOOD: Descriptive names
+const filteredActiveProducts = products.filter(p => p.isActive);
+const formattedCurrency = formatCurrency(value, 'RUB');
+
+// ❌ BAD: Short or cryptic names
+const p = products.filter(p => p.isActive);
+const fc = formatCurrency(v, 'RUB');
+const data = response.data; // Too generic
+```
+
+#### 2.2.2 Functions
+
+```typescript
+// ✅ GOOD: camelCase, verb prefix for actions
+function calculatePortfolioValue(positions: Position[]): number { }
+function formatCurrency(amount: number, currency: string): string { }
+function validateEmail(email: string): boolean { }
+function handleProductPress(product: Product): void { }
+
+// ✅ GOOD: Async functions with async prefix not required
+async function fetchPortfolio(id: string): Promise<Portfolio> { }
+
+// ✅ GOOD: Event handlers with handle prefix
+const handlePress = () => { };
+const handleSubmit = () => { };
+const handleInputChange = (value: string) => { };
+
+// ✅ GOOD: Boolean-returning functions with is/has/can prefix
+function isValidEmail(email: string): boolean { }
+function hasActivePositions(portfolio: Portfolio): boolean { }
+function canUserAccessFeature(user: User): boolean { }
+
+// ✅ GOOD: Factory functions with create prefix
+function createApiClient(config: ApiConfig): ApiClient { }
+function createMockProduct(overrides?: Partial<Product>): Product { }
+
+// ✅ GOOD: Private methods with _ prefix (optional)
+class PortfolioService {
+  public calculateTotal(): number { }
+  private _applyTax(value: number): number { }
+}
+```
+
+### 2.3 Components
+
+```typescript
+// ✅ GOOD: PascalCase component names
+export const ProductCard: React.FC<ProductCardProps> = () => { };
+export const PortfolioList: React.FC<PortfolioListProps> = () => { };
+export const ChatMessage: React.FC<ChatMessageProps> = () => { };
+
+// ✅ GOOD: Higher-order components with with prefix
+export const withAuthentication = <P extends object>(
+  Component: React.ComponentType<P>
+) => { };
+
+// ✅ GOOD: Component prop interface with Props suffix
+interface ProductCardProps {
+  product: Product;
+  onPress: (product: Product) => void;
+}
+
+// ✅ GOOD: Component ref interface with Ref suffix
+interface ProductCardRef {
+  animate: () => void;
+}
+
+// ✅ GOOD: Screen components with Screen suffix
+export const PortfolioScreen: React.FC = () => { };
+export const ChatScreen: React.FC = () => { };
+
+// ✅ GOOD: Domain-specific prefix for domain components
+export const ProductDetailCard = () => { };
+export const PortfolioSummaryCard = () => { };
+
+// ❌ BAD: Generic names
+export const Card = () => { };
+export const List = () => { };
+export const Item = () => { };
+```
+
+### 2.4 API Endpoints
+
+```typescript
+// ✅ GOOD: RESTful naming
+GET    /api/v1/products              # List products
+GET    /api/v1/products/:id          # Get product
+POST   /api/v1/products/:id/interest # Express interest
+GET    /api/v1/portfolio             # Get portfolio
+GET    /api/v1/portfolio/positions   # Get positions
+GET    /api/v1/portfolio/transactions # Get transactions
+
+// ✅ GOOD: Resource naming (plural nouns)
+/api/v1/users
+/api/v1/products
+/api/v1/portfolios
+
+// ✅ GOOD: Nested resources (max 2 levels)
+/api/v1/portfolios/:id/positions
+/api/v1/portfolios/:id/transactions
+
+// ✅ GOOD: Actions as verbs on resources
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+POST /api/v1/auth/refresh
+POST /api/v1/auth/forgot-password
+
+// ❌ BAD: Verbs in URLs
+/api/v1/getProducts
+/api/v1/createProduct
+/api/v1/deleteProduct
+
+// ❌ BAD: Nested resources too deep
+/api/v1/portfolios/:id/positions/:id/transactions/:id
+```
+
+### 2.5 Database and State
+
+```typescript
+// ✅ GOOD: Entity table names (snake_case, plural)
+users
+products
+portfolios
+portfolio_positions
+chat_messages
+
+// ✅ GOOD: Column names (snake_case)
+created_at
+updated_at
+first_name
+portfolio_id
+
+// ✅ GOOD: Zustand stores with Store suffix
+export const useAuthStore = create<AuthState>()((set, get) => ({ }));
+export const usePortfolioStore = create<PortfolioState>()((set, get) => ({ }));
+
+// ✅ GOOD: React Query keys (array format)
+['auth', 'session']
+['products', 'list', { category: 'stocks' }]
+['portfolio', 'positions', portfolioId]
+```
+
+---
+
+## 3. Folder Structure
+
+### 3.1 Complete Project Structure
+
+```
+asset-management-app/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml
+│   │   └── deploy.yml
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── ISSUE_TEMPLATE.md
+├── .husky/
+│   ├── pre-commit
+│   └── pre-push
+├── __mocks__/
+│   ├── fileMock.js
+│   └── styleMock.js
+├── __tests__/
+│   ├── setup.ts
+│   └── e2e/
+├── android/
+│   ├── app/
+│   ├── build.gradle
+│   └── gradle.properties
+├── ios/
+│   ├── AssetManagementApp/
+│   ├── Podfile
+│   └── Podfile.lock
+├── docs/
+│   ├── prd.md
+│   ├── system-design.md
+│   ├── standards.md
+│   └── adr/
+│       ├── ADR-001-technology-stack.md
+│       └── ADR-002-architecture-pattern.md
+├── src/
+│   ├── domain/
+│   │   ├── entities/
+│   │   │   ├── Product.ts
+│   │   │   ├── Portfolio.ts
+│   │   │   ├── Position.ts
+│   │   │   ├── Transaction.ts
+│   │   │   ├── User.ts
+│   │   │   ├── Manager.ts
+│   │   │   └── ChatMessage.ts
+│   │   ├── value-objects/
+│   │   │   ├── Money.ts
+│   │   │   ├── Percentage.ts
+│   │   │   ├── DateRange.ts
+│   │   │   └── PhoneNumber.ts
+│   │   ├── repositories/
+│   │   │   ├── IAuthRepository.ts
+│   │   │   ├── IProductRepository.ts
+│   │   │   ├── IPortfolioRepository.ts
+│   │   │   └── IChatRepository.ts
+│   │   ├── usecases/
+│   │   │   ├── AuthenticateUser.ts
+│   │   │   ├── GetProductDetails.ts
+│   │   │   ├── GetPortfolio.ts
+│   │   │   ├── CalculatePortfolioValue.ts
+│   │   │   └── SendMessage.ts
+│   │   └── services/
+│   │       ├── PortfolioCalculator.ts
+│   │       └── InvestmentValidator.ts
+│   ├── adapters/
+│   │   ├── api/
+│   │   │   ├── ApiClient.ts
+│   │   │   ├── AuthApi.ts
+│   │   │   ├── ProductApi.ts
+│   │   │   ├── PortfolioApi.ts
+│   │   │   └── ChatApi.ts
+│   │   ├── repositories/
+│   │   │   ├── AuthRepository.ts
+│   │   │   ├── ProductRepository.ts
+│   │   │   ├── PortfolioRepository.ts
+│   │   │   └── ChatRepository.ts
+│   │   ├── storage/
+│   │   │   ├── SecureStorage.ts
+│   │   │   ├── AsyncStorage.ts
+│   │   │   └── CacheStorage.ts
+│   │   ├── websocket/
+│   │   │   ├── ChatWebSocket.ts
+│   │   │   └── WebSocketManager.ts
+│   │   └── platform/
+│   │       ├── BiometricsService.ts
+│   │       ├── NotificationService.ts
+│   │       └── LinkingService.ts
+│   ├── view/
+│   │   ├── screens/
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginScreen.tsx
+│   │   │   │   ├── ForgotPasswordScreen.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── portfolio/
+│   │   │   │   ├── PortfolioScreen.tsx
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── PortfolioSummary.tsx
+│   │   │   │   │   ├── PositionList.tsx
+│   │   │   │   │   └── TransactionList.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── products/
+│   │   │   │   ├── ProductsScreen.tsx
+│   │   │   │   ├── ProductDetailScreen.tsx
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── ProductCard.tsx
+│   │   │   │   │   └── ProductFilter.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── chat/
+│   │   │   │   ├── ChatScreen.tsx
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── MessageBubble.tsx
+│   │   │   │   │   ├── ChatInput.tsx
+│   │   │   │   │   └── ManagerStatus.tsx
+│   │   │   │   └── index.ts
+│   │   │   └── profile/
+│   │   │       ├── ProfileScreen.tsx
+│   │   │       └── index.ts
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Button/
+│   │   │   │   ├── Card/
+│   │   │   │   ├── Input/
+│   │   │   │   ├── Text/
+│   │   │   │   ├── Loading/
+│   │   │   │   ├── ErrorBoundary/
+│   │   │   │   └── index.ts
+│   │   │   ├── forms/
+│   │   │   │   ├── FormField/
+│   │   │   │   ├── FormSelect/
+│   │   │   │   └── index.ts
+│   │   │   └── layout/
+│   │   │       ├── Screen/
+│   │   │       ├── Header/
+│   │   │       ├── TabBar/
+│   │   │       └── index.ts
+│   │   ├── navigation/
+│   │   │   ├── AppNavigator.tsx
+│   │   │   ├── AuthNavigator.tsx
+│   │   │   ├── MainNavigator.tsx
+│   │   │   ├── types.ts
+│   │   │   └── index.ts
+│   │   └── hooks/
+│   │       ├── useAuth.ts
+│   │       ├── usePortfolio.ts
+│   │       ├── useProducts.ts
+│   │       └── useChat.ts
+│   ├── state/
+│   │   ├── stores/
+│   │   │   ├── authStore.ts
+│   │   │   ├── userStore.ts
+│   │   │   └── uiStore.ts
+│   │   ├── queries/
+│   │   │   ├── queryClient.ts
+│   │   │   ├── queryKeys.ts
+│   │   │   └── queryHooks/
+│   │   │       ├── usePortfolioQuery.ts
+│   │   │       └── useProductsQuery.ts
+│   │   └── mutations/
+│   │       ├── useAuthMutations.ts
+│   │       └── useChatMutations.ts
+│   ├── i18n/
+│   │   ├── index.ts
+│   │   └── locales/
+│   │       └── ru/
+│   │           ├── common.json
+│   │           ├── auth.json
+│   │           ├── portfolio.json
+│   │           ├── products.json
+│   │           └── chat.json
+│   ├── di/
+│   │   ├── container.ts
+│   │   └── providers/
+│   │       ├── RepositoryProvider.ts
+│   │       └── UseCaseProvider.ts
+│   ├── shared/
+│   │   ├── types/
+│   │   │   ├── api.types.ts
+│   │   │   ├── navigation.types.ts
+│   │   │   └── common.types.ts
+│   │   ├── utils/
+│   │   │   ├── formatters.ts
+│   │   │   ├── validators.ts
+│   │   │   ├── helpers.ts
+│   │   │   └── constants.ts
+│   │   ├── constants/
+│   │   │   ├── routes.ts
+│   │   │   ├── api-config.ts
+│   │   │   └── theme.ts
+│   │   └── errors/
+│   │       ├── AppError.ts
+│   │       ├── ApiError.ts
+│   │       └── ValidationError.ts
+│   ├── App.tsx
+│   └── env.d.ts
+├── .env.example
+├── .eslintrc.js
+├── .prettierrc.js
+├── .gitignore
+├── babel.config.js
+├── jest.config.js
+├── metro.config.js
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+### 3.2 Module Organization
+
+#### 3.2.1 Domain Module Example
+
+```
+domain/
+├── entities/
+│   ├── Product.ts
+│   ├── Product.test.ts
+│   └── index.ts              # Export all entities
+├── value-objects/
+│   ├── Money.ts
+│   └── index.ts
+├── repositories/
+│   ├── IProductRepository.ts
+│   └── index.ts
+├── usecases/
+│   ├── GetProductDetails.ts
+│   ├── GetProductDetails.test.ts
+│   └── index.ts
+└── index.ts                  # Export all domain exports
+```
+
+#### 3.2.2 Barrel Exports (index.ts)
+
+```typescript
+// domain/entities/index.ts
+export { Product } from './Product';
+export { Portfolio } from './Portfolio';
+export { Position } from './Position';
+export type { ProductData, PortfolioData, PositionData } from './types';
+
+// domain/index.ts
+export * from './entities';
+export * from './value-objects';
+export * from './repositories';
+export * from './usecases';
+export * from './services';
+```
+
+---
+
+## 4. Git Workflow
+
+### 4.1 Branch Naming
+
+```
+<type>/<ticket-number>-<short-description>
+
+Examples:
+feature/AMC-42-product-showcase-screen
+bugfix/AMC-18-fix-login-validation
+hotfix/AMC-33-crash-on-chat-open
+refactor/AMC-55-improve-state-management
+docs/AMC-20-update-readme
+chore/AMC-10-setup-ci-pipeline
+```
+
+#### Branch Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `feature` | New feature development | `feature/AMC-42-product-list` |
+| `bugfix` | Bug fixes during development | `bugfix/AMC-18-login-crash` |
+| `hotfix` | Critical production fixes | `hotfix/AMC-33-crash-fix` |
+| `refactor` | Code refactoring | `refactor/AMC-55-state-cleanup` |
+| `docs` | Documentation updates | `docs/AMC-20-readme` |
+| `chore` | Maintenance tasks | `chore/AMC-10-ci-setup` |
+| `test` | Adding/updating tests | `test/AMC-25-portfolio-tests` |
+
+### 4.2 Commit Messages
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+
+Examples:
+feat(auth): add biometric authentication support
+
+- Implement Face ID/Touch ID integration
+- Add fallback to password authentication
+- Store biometric preference in secure storage
+
+Closes #AMC-42
+
+---
+
+fix(chat): resolve WebSocket reconnection issue
+
+The WebSocket was not reconnecting after network interruption.
+Added exponential backoff retry strategy.
+
+Fixes #AMC-18
+
+---
+
+refactor(portfolio): extract calculation logic to domain service
+
+Move portfolio calculations from screen to domain service
+for better testability and reusability.
+```
+
+#### Commit Types
+
+| Type | Description | Example Subject |
+|------|-------------|-----------------|
+| `feat` | New feature | `feat(products): add product filtering` |
+| `fix` | Bug fix | `fix(auth): handle token expiry` |
+| `refactor` | Code refactoring | `refactor(chat): extract message parsing` |
+| `style` | Code style (formatting) | `style: format with prettier` |
+| `test` | Adding/updating tests | `test(portfolio): add unit tests` |
+| `docs` | Documentation | `docs: update api documentation` |
+| `chore` | Maintenance | `chore: update dependencies` |
+| `perf` | Performance improvement | `perf(list): implement virtualization` |
+| `ci` | CI/CD changes | `ci: add test coverage report` |
+
+#### Commit Rules
+
+1. **Subject line**: Max 72 characters, imperative mood
+2. **Body**: Explain what and why, not how (wrap at 72 chars)
+3. **Footer**: Reference issues, breaking changes
+
+```
+✅ GOOD:
+feat(products): add investment product catalog
+
+Implement product listing with category filtering and
+performance metrics display.
+
+Closes #42
+
+---
+
+❌ BAD:
+Add products
+
+fixed stuff
+```
+
+### 4.3 Pull Request Guidelines
+
+#### 4.3.1 PR Template
+
+```markdown
+## Description
+<!-- Brief description of changes -->
+
+## Type of Change
+- [ ] Feature (non-breaking change which adds functionality)
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Refactoring (no functional changes)
+- [ ] Documentation update
+
+## Related Issues
+Closes #
+
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Component tests added/updated
+- [ ] E2E tests added/updated
+- [ ] Manual testing completed
+
+## Screenshots (if applicable)
+<!-- Add screenshots for UI changes -->
+
+## Checklist
+- [ ] Code follows project style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex logic
+- [ ] Documentation updated
+- [ ] No new warnings introduced
+- [ ] Tests pass locally
+- [ ] Test coverage maintained/improved
+
+## Additional Notes
+<!-- Any additional information for reviewers -->
+```
+
+#### 4.3.2 PR Title Format
+
+```
+[AMC-XX] Brief description of change
+
+Examples:
+[AMC-42] Implement product showcase screen
+[AMC-18] Fix login validation bug
+[AMC-55] Refactor state management
+```
+
+#### 4.3.3 PR Size Guidelines
+
+| Size | Lines Changed | Review Time |
+|------|---------------|-------------|
+| XS | < 50 | < 15 min |
+| S | 50 - 150 | 15 - 30 min |
+| M | 150 - 300 | 30 - 60 min |
+| L | 300 - 500 | 1 - 2 hours |
+| XL | > 500 | Split into smaller PRs |
+
+### 4.4 Git Workflow Process
+
+```
+main (protected)
+  │
+  ├── develop (protected)
+  │     │
+  │     ├── feature/AMC-42-product-list
+  │     │     └── PR → develop
+  │     │
+  │     ├── feature/AMC-43-product-detail
+  │     │     └── PR → develop
+  │     │
+  │     └── bugfix/AMC-18-login-fix
+  │           └── PR → develop
+  │
+  └── hotfix/AMC-33-critical-fix
+        └── PR → main AND develop
+```
+
+#### Workflow Steps
+
+1. **Create branch** from `develop`
+2. **Make changes** with meaningful commits
+3. **Push branch** to remote
+4. **Create PR** to `develop`
+5. **Code review** (at least 1 approval)
+6. **Squash and merge** to `develop`
+7. **Delete branch**
+
+---
+
+## 5. Testing Standards
+
+### 5.1 Test File Organization
+
+```
+src/
+├── domain/
+│   ├── entities/
+│   │   ├── Product.ts
+│   │   └── Product.test.ts        # Co-located tests
+│   └── usecases/
+│       ├── GetProductDetails.ts
+│       └── GetProductDetails.test.ts
+│
+├── view/
+│   └── screens/
+│       └── portfolio/
+│           ├── PortfolioScreen.tsx
+│           └── PortfolioScreen.test.tsx
+│
+__tests__/
+├── setup.ts                        # Test setup
+├── mocks/                          # Global mocks
+│   ├── api.mock.ts
+│   └── storage.mock.ts
+└── e2e/                            # E2E tests
+    ├── auth.e2e.test.ts
+    ├── portfolio.e2e.test.ts
+    └── chat.e2e.test.ts
+```
+
+### 5.2 Test Naming Convention
+
+```typescript
+// ✅ GOOD: Describe-It pattern
+describe('Product', () => {
+  describe('calculateReturn', () => {
+    it('should return positive percentage for profitable product', () => {
+      // ...
+    });
+
+    it('should return negative percentage for losing product', () => {
+      // ...
+    });
+
+    it('should throw error for invalid investment amount', () => {
+      // ...
+    });
+  });
+});
+
+// ✅ GOOD: Component test naming
+describe('ProductCard', () => {
+  describe('rendering', () => {
+    it('should render product name', () => { });
+    it('should render product description', () => { });
+    it('should not render interest button when onInterestPress is undefined', () => { });
+  });
+
+  describe('interactions', () => {
+    it('should call onPress when card is pressed', () => { });
+    it('should call onInterestPress when interest button is pressed', () => { });
+  });
+
+  describe('accessibility', () => {
+    it('should have correct accessibility label', () => { });
+    it('should be accessible by screen reader', () => { });
+  });
+});
+```
+
+### 5.3 Test Structure (AAA Pattern)
+
+```typescript
+describe('usePortfolio', () => {
+  it('should return portfolio data on successful fetch', async () => {
+    // Arrange
+    const mockPortfolio = createMockPortfolio();
+    mockPortfolioRepository.getPortfolio.mockResolvedValue(mockPortfolio);
+
+    // Act
+    const { result } = renderHook(() => usePortfolio('portfolio-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Assert
+    expect(result.current.portfolio).toEqual(mockPortfolio);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('should return error on failed fetch', async () => {
+    // Arrange
+    const mockError = new Error('Network error');
+    mockPortfolioRepository.getPortfolio.mockRejectedValue(mockError);
+
+    // Act
+    const { result } = renderHook(() => usePortfolio('portfolio-1'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Assert
+    expect(result.current.portfolio).toBeNull();
+    expect(result.current.error).toEqual(mockError);
+  });
+});
+```
+
+### 5.4 Test Coverage Requirements
+
+| Layer | Minimum Coverage | Target Coverage |
+|-------|------------------|-----------------|
+| Domain Entities | 90% | 100% |
+| Domain Use Cases | 90% | 100% |
+| Domain Services | 80% | 90% |
+| Adapters/Repositories | 70% | 80% |
+| View/Components | 60% | 75% |
+| View/Screens | 50% | 65% |
+| **Overall MVP** | **60%** | **70%** |
+
+#### Coverage Configuration
+
+```javascript
+// jest.config.js
+module.exports = {
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.test.{ts,tsx}',
+    '!src/**/__tests__/**',
+    '!src/**/__mocks__/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+    './src/domain/': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+  },
+  coverageReporters: ['text', 'lcov', 'html'],
+};
+```
+
+### 5.5 Unit Test Examples
+
+#### 5.5.1 Domain Entity Test
+
+```typescript
+// domain/entities/Product.test.ts
+import { Product } from './Product';
+
+describe('Product', () => {
+  const validProductData = {
+    id: 'product-1',
+    name: 'Test Product',
+    description: 'A test product',
+    minInvestment: 10000,
+    expectedReturn: 15,
+    riskLevel: 'moderate' as const,
+    category: 'stocks' as const,
+  };
+
+  describe('constructor', () => {
+    it('should create product with valid data', () => {
+      const product = new Product(validProductData);
+      
+      expect(product.id).toBe('product-1');
+      expect(product.name).toBe('Test Product');
+      expect(product.minInvestment).toBe(10000);
+    });
+
+    it('should throw error for negative min investment', () => {
+      expect(() => {
+        new Product({ ...validProductData, minInvestment: -100 });
+      }).toThrow('Minimum investment must be positive');
+    });
+  });
+
+  describe('isEligibleForAmount', () => {
+    it('should return true for amount >= minInvestment', () => {
+      const product = new Product(validProductData);
+      
+      expect(product.isEligibleForAmount(10000)).toBe(true);
+      expect(product.isEligibleForAmount(15000)).toBe(true);
+    });
+
+    it('should return false for amount < minInvestment', () => {
+      const product = new Product(validProductData);
+      
+      expect(product.isEligibleForAmount(5000)).toBe(false);
+    });
+  });
+
+  describe('calculateProjectedReturn', () => {
+    it('should calculate projected return correctly', () => {
+      const product = new Product(validProductData);
+      const projected = product.calculateProjectedReturn(100000);
+      
+      expect(projected).toBe(115000); // 100000 * 1.15
+    });
+  });
+});
+```
+
+#### 5.5.2 Component Test
+
+```typescript
+// view/components/common/Button/Button.test.tsx
+import { render, fireEvent } from '@testing-library/react-native';
+import { Button } from './Button';
+
+describe('Button', () => {
+  const defaultProps = {
+    title: 'Click me',
+    onPress: jest.fn(),
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('rendering', () => {
+    it('should render title correctly', () => {
+      const { getByText } = render(<Button {...defaultProps} />);
+      
+      expect(getByText('Click me')).toBeTruthy();
+    });
+
+    it('should render loading indicator when loading', () => {
+      const { getByTestId, queryByText } = render(
+        <Button {...defaultProps} loading />
+      );
+      
+      expect(getByTestId('button-loading-indicator')).toBeTruthy();
+      expect(queryByText('Click me')).toBeNull();
+    });
+
+    it('should apply disabled styles when disabled', () => {
+      const { getByTestId } = render(
+        <Button {...defaultProps} disabled />
+      );
+      
+      const button = getByTestId('button');
+      expect(button).toHaveStyle({ opacity: 0.5 });
+    });
+  });
+
+  describe('interactions', () => {
+    it('should call onPress when pressed', () => {
+      const { getByText } = render(<Button {...defaultProps} />);
+      
+      fireEvent.press(getByText('Click me'));
+      
+      expect(defaultProps.onPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onPress when disabled', () => {
+      const { getByText } = render(
+        <Button {...defaultProps} disabled />
+      );
+      
+      fireEvent.press(getByText('Click me'));
+      
+      expect(defaultProps.onPress).not.toHaveBeenCalled();
+    });
+
+    it('should not call onPress when loading', () => {
+      const { getByTestId } = render(
+        <Button {...defaultProps} loading />
+      );
+      
+      fireEvent.press(getByTestId('button'));
+      
+      expect(defaultProps.onPress).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('should have correct accessibility role', () => {
+      const { getByRole } = render(<Button {...defaultProps} />);
+      
+      expect(getByRole('button')).toBeTruthy();
+    });
+
+    it('should indicate disabled state to screen reader', () => {
+      const { getByRole } = render(
+        <Button {...defaultProps} disabled />
+      );
+      
+      expect(getByRole('button')).toHaveProp('accessibilityState', {
+        disabled: true,
+      });
+    });
+  });
+});
+```
+
+### 5.6 E2E Test Examples
+
+```typescript
+// __tests__/e2e/portfolio.e2e.test.ts
+import { device, element, by, expect as detoxExpect } from 'detox';
+
+describe('Portfolio Flow', () => {
+  beforeAll(async () => {
+    await device.launchApp();
+    // Login first
+    await element(by.id('email-input')).typeText('test@example.com');
+    await element(by.id('password-input')).typeText('password123');
+    await element(by.id('login-button')).tap();
+    await detoxExpect(element(by.id('portfolio-screen'))).toBeVisible();
+  });
+
+  it('should display portfolio overview', async () => {
+    await detoxExpect(element(by.id('portfolio-summary'))).toBeVisible();
+    await detoxExpect(element(by.id('total-value'))).toBeVisible();
+  });
+
+  it('should navigate to position details', async () => {
+    await element(by.id('position-item-0')).tap();
+    await detoxExpect(element(by.id('position-detail-screen'))).toBeVisible();
+  });
+
+  it('should display transactions list', async () => {
+    await element(by.id('transactions-tab')).tap();
+    await detoxExpect(element(by.id('transactions-list'))).toBeVisible();
+  });
+});
+```
+
+### 5.7 Test Utilities
+
+```typescript
+// __tests__/utils/test-utils.tsx
+import { ReactElement } from 'react';
+import { render, RenderOptions } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a custom render that includes providers
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+}
+
+interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
+  queryClient?: QueryClient;
+}
+
+export function renderWithProviders(
+  ui: ReactElement,
+  options: CustomRenderOptions = {}
+) {
+  const { queryClient = createTestQueryClient(), ...renderOptions } = options;
+
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+
+  return {
+    ...render(ui, { wrapper: Wrapper, ...renderOptions }),
+    queryClient,
+  };
+}
+
+// Mock factories
+export function createMockProduct(overrides?: Partial<Product>): Product {
+  return {
+    id: 'product-1',
+    name: 'Test Product',
+    description: 'Test description',
+    minInvestment: 10000,
+    expectedReturn: 15,
+    riskLevel: 'moderate',
+    category: 'stocks',
+    ...overrides,
+  };
+}
+
+export function createMockPortfolio(overrides?: Partial<Portfolio>): Portfolio {
+  return {
+    id: 'portfolio-1',
+    totalValue: 100000,
+    positions: [],
+    lastUpdated: new Date(),
+    ...overrides,
+  };
+}
+```
+
+---
+
+## 6. Code Review Guidelines
+
+### 6.1 Review Checklist
+
+#### Code Quality
+- [ ] Code compiles without errors or warnings
+- [ ] TypeScript strict mode compliance
+- [ ] No `any` types without justification
+- [ ] Functions are small and focused (max 30 lines)
+- [ ] No magic numbers/strings (use constants)
+- [ ] No commented-out code
+- [ ] No console.log statements (use logger)
+
+#### Architecture
+- [ ] Follows Clean Architecture layers
+- [ ] Domain layer has no external dependencies
+- [ ] Dependencies flow inward
+- [ ] Proper separation of concerns
+- [ ] No business logic in components
+
+#### Performance
+- [ ] List virtualization for long lists
+- [ ] Images optimized and cached
+- [ ] Expensive calculations memoized
+- [ ] Callbacks memoized when passed to children
+- [ ] No unnecessary re-renders
+
+#### Security
+- [ ] No sensitive data in logs
+- [ ] Tokens stored in secure storage
+- [ ] API keys not hardcoded
+- [ ] Input validation on user data
+- [ ] No SQL injection vulnerabilities
+
+#### Testing
+- [ ] Unit tests for new logic
+- [ ] Component tests for UI
+- [ ] Edge cases covered
+- [ ] Test coverage not decreased
+- [ ] Tests are meaningful (not just for coverage)
+
+#### Accessibility
+- [ ] Touch targets min 44x44 points
+- [ ] Screen reader labels provided
+- [ ] Color contrast meets WCAG 2.1 AA
+- [ ] Focus management correct
+- [ ] Not relying solely on color
+
+#### Documentation
+- [ ] Complex logic documented
+- [ ] Public APIs documented
+- [ ] README updated if needed
+- [ ] Type annotations complete
+
+### 6.2 Review Process
+
+1. **Author creates PR** with template filled
+2. **CI checks pass** (build, lint, test)
+3. **Reviewer assigned** (at least 1, ideally 2)
+4. **Review feedback** provided within 24 hours
+5. **Author addresses** feedback
+6. **Approval** from all reviewers
+7. **Squash and merge** to target branch
+8. **Branch deleted**
+
+### 6.3 Review Feedback Guidelines
+
+```markdown
+<!-- ✅ GOOD: Constructive feedback -->
+**Suggestion**: Consider extracting this logic to a custom hook 
+for better testability and reusability.
+
+```typescript
+// Proposed solution
+function usePortfolioValue(positions: Position[]) {
+  return useMemo(() => 
+    positions.reduce((sum, p) => sum + p.value, 0),
+    [positions]
+  );
+}
+```
+
+---
+
+<!-- ✅ GOOD: Asking questions -->
+**Question**: Why did you choose to use `useEffect` here instead 
+of `useMemo`? I'm curious about the reasoning.
+
+---
+
+<!-- ❌ BAD: Vague or unhelpful -->
+This is wrong.
+Fix this.
+```
+
+---
+
+## 7. Documentation Standards
+
+### 7.1 Code Documentation
+
+#### 7.1.1 Inline Comments
+
+```typescript
+// ✅ GOOD: Explain why, not what
+// Use exponential backoff to prevent server overload during
+// connection recovery (per WebSocket best practices)
+const reconnectDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+
+// ✅ GOOD: Document workarounds
+// FIXME: Backend returns dates as strings, remove when fixed
+// Issue: https://github.com/org/repo/issues/42
+const date = new Date(response.data.created_at);
+
+// ✅ GOOD: Document complex algorithms
+// Calculate compound annual growth rate (CAGR)
+// Formula: (Ending Value / Beginning Value) ^ (1 / n) - 1
+function calculateCAGR(endValue: number, startValue: number, years: number): number {
+  return Math.pow(endValue / startValue, 1 / years) - 1;
+}
+
+// ❌ BAD: Obvious comments
+// Loop through positions
+for (const position of positions) {
+  // Add position value to total
+  total += position.value;
+}
+```
+
+#### 7.1.2 Function/Method Documentation
+
+```typescript
+/**
+ * Calculates the total value of a portfolio including all positions.
+ * 
+ * @param portfolio - The portfolio to calculate value for
+ * @param includePending - Whether to include pending transactions
+ * @returns The total portfolio value in base currency
+ * 
+ * @example
+ * ```typescript
+ * const portfolio = { positions: [{ value: 50000 }, { value: 30000 }] };
+ * const total = calculateTotalValue(portfolio, false);
+ * // Returns: 80000
+ * ```
+ * 
+ * @throws {ValidationError} If portfolio is null or undefined
+ */
+export function calculateTotalValue(
+  portfolio: Portfolio, 
+  includePending: boolean = false
+): number {
+  // Implementation
+}
+```
+
+#### 7.1.3 Interface Documentation
+
+```typescript
+/**
+ * Represents an investment product available to clients.
+ * 
+ * @remarks
+ * Products are read-only entities created by administrators.
+ * Clients can view products and express interest, but cannot
+ * directly purchase through the app (handled by managers).
+ * 
+ * @see {@link Portfolio} for client holdings
+ * @see {@link Position} for individual product holdings
+ */
+export interface Product {
+  /** Unique identifier for the product */
+  readonly id: string;
+  
+  /** Display name of the product */
+  readonly name: string;
+  
+  /** Minimum investment amount in base currency (RUB) */
+  readonly minInvestment: number;
+  
+  /** Expected annual return as percentage (e.g., 15 = 15%) */
+  readonly expectedReturn: number;
+  
+  /** Risk classification for regulatory compliance */
+  readonly riskLevel: RiskLevel;
+}
+```
+
+### 7.2 README Structure
+
+```markdown
+# Asset Management Client Portal
+
+## Overview
+Brief description of the project.
+
+## Features
+- Feature 1
+- Feature 2
+
+## Tech Stack
+- React Native
+- TypeScript
+- etc.
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- React Native CLI
+- Xcode 14+ (iOS)
+- Android Studio (Android)
+
+### Installation
+\`\`\`bash
+npm install
+cd ios && pod install
+\`\`\`
+
+### Running
+\`\`\`bash
+# iOS
+npm run ios
+
+# Android
+npm run android
+\`\`\`
+
+## Project Structure
+Brief overview of folder structure.
+
+## Architecture
+Link to system design document.
+
+## Testing
+\`\`\`bash
+npm test
+npm run test:e2e
+\`\`\`
+
+## Contributing
+Link to contributing guidelines.
+
+## License
+MIT
+```
+
+### 7.3 API Documentation
+
+```typescript
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: Authenticate user
+ *     description: Authenticates user with email and password, returns tokens
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         description: Too many attempts
+ */
+```
+
+---
+
+## 8. Enforcement
+
+### 8.1 Pre-commit Hooks
+
+```javascript
+// .husky/pre-commit
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npm run lint
+npm run test:unit -- --passWithNoTests
+npm run type-check
+```
+
+### 8.2 CI/CD Checks
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run type-check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: codecov/codecov-action@v3
+```
+
+### 8.3 IDE Configuration
+
+```json
+// .vscode/settings.json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
+```
+
+---
+
+## Appendix A: ESLint Configuration
+
+```javascript
+// .eslintrc.js
+module.exports = {
+  root: true,
+  extends: [
+    '@react-native-community',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
+    'plugin:react-hooks/recommended',
+    'plugin:react-native/all',
+    'prettier',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  plugins: ['@typescript-eslint', 'react-hooks', 'react-native'],
+  rules: {
+    '@typescript-eslint/explicit-function-return-type': 'warn',
+    '@typescript-eslint/explicit-module-boundary-types': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-misused-promises': 'error',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+    'react-native/no-unused-styles': 'error',
+    'react-native/split-platform-components': 'error',
+    'react-native/no-inline-styles': 'warn',
+    'react-native/no-color-literals': 'warn',
+    'import/order': ['error', {
+      'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+      'newlines-between': 'always',
+      'alphabetize': { 'order': 'asc' },
+    }],
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
   },
 };
 ```
 
-### 6.4 Data Flow with State Management
+## Appendix B: Prettier Configuration
 
-```mermaid
-graph TB
-    subgraph "View Layer"
-        Screen[Screen Component]
-        Hook[Custom Hook]
-    end
-    
-    subgraph "State Management"
-        Zustand[Zustand Store<br/>Client State]
-        RQ[React Query<br/>Server State]
-        Cache[Query Cache]
-    end
-    
-    subgraph "Domain Layer"
-        UC[Use Case]
-    end
-    
-    subgraph "Adapters Layer"
-        Repo[Repository]
-        API[API Client]
-    end
-    
-    Screen --> Hook
-    Hook --> Zustand
-    Hook --> RQ
-    
-    RQ --> UC
-    RQ --> Cache
-    
-    UC --> Repo
-    Repo --> API
-    
-    API -->|Data| Cache
-    Cache -->|Cached Data| RQ
-    RQ -->|State| Hook
-    Hook -->|Props| Screen
-    
-    Zustand -->|Client State| Hook
-    
-    style RQ fill:#E6F3FF,stroke:#4A90E2
-    style Zustand fill:#E6F3FF,stroke:#4A90E2
+```javascript
+// .prettierrc.js
+module.exports = {
+  arrowParens: 'always',
+  bracketSameLine: false,
+  bracketSpacing: true,
+  singleQuote: true,
+  trailingComma: 'es5',
+  tabWidth: 2,
+  semi: true,
+  printWidth: 100,
+  useTabs: false,
+};
 ```
 
 ---
 
-## 7. Component Boundaries & Interfaces
-
-### 7.1 Repository Interfaces (Domain Layer)
-
-```typescript
-// Authentication Repository Interface
-export interface IAuthRepository {
-  login(credentials: Credentials): Promise<Result<Session, AuthError>>;
-  logout(): Promise<Result<void, AuthError>>;
-  refreshToken(refreshToken: string): Promise<Result<Session, AuthError>>;
-  forgotPassword(email: string): Promise<Result<void, AuthError>>;
-  getSession(): Promise<Session | null>;
-  getSessionStatus(): Promise<SessionStatus>;
-}
-
-// Product Repository Interface
-export interface IProductRepository {
-  getProducts(params: GetProductsParams): Promise<Result<Product[], ProductError>>;
-  getProductById(id: string): Promise<Result<Product, ProductError>>;
-  expressInterest(productId: string, data: InterestData): Promise<Result<void, ProductError>>;
-}
-
-// Portfolio Repository Interface
-export interface IPortfolioRepository {
-  getPortfolio(userId: string): Promise<Result<Portfolio, PortfolioError>>;
-  getPositions(params: GetPositionsParams): Promise<Result<Position[], PortfolioError>>;
-  getTransactions(params: GetTransactionsParams): Promise<Result<Transaction[], PortfolioError>>;
-}
-
-// Chat Repository Interface
-export interface IChatRepository {
-  sendMessage(message: SendMessageData): Promise<Result<Message, ChatError>>;
-  getHistory(params: GetChatHistoryParams): Promise<Result<Message[], ChatError>>;
-  subscribeToMessages(callback: (message: Message) => void): Unsubscribe;
-  markAsRead(messageId: string): Promise<Result<void, ChatError>>;
-  getManagerStatus(): Promise<ManagerStatus>;
-}
-```
-
-### 7.2 Use Case Interfaces
-
-```typescript
-// Use Case Base Interface
-export interface IUseCase<TParams, TResult, TError> {
-  execute(params: TParams): Promise<Result<TResult, TError>>;
-}
-
-// Specific Use Case Examples
-export class LoginUseCase implements IUseCase<LoginParams, Session, AuthError> {
-  constructor(
-    private readonly authRepository: IAuthRepository,
-    private readonly sessionManager: ISessionManager
-  ) {}
-  
-  async execute(params: LoginParams): Promise<Result<Session, AuthError>> {
-    // Implementation
-  }
-}
-
-export class GetPortfolioUseCase implements IUseCase<string, Portfolio, PortfolioError> {
-  constructor(
-    private readonly portfolioRepository: IPortfolioRepository,
-    private readonly cacheService: ICacheService
-  ) {}
-  
-  async execute(userId: string): Promise<Result<Portfolio, PortfolioError>> {
-    // Implementation
-  }
-}
-```
-
-### 7.3 Component Communication
-
-```mermaid
-graph LR
-    subgraph "Screen Component"
-        Screen[PortfolioScreen]
-    end
-    
-    subgraph "Custom Hook"
-        Hook[usePortfolio]
-    end
-    
-    subgraph "State"
-        Zustand[Zustand Store]
-        RQ[React Query]
-    end
-    
-    subgraph "Domain"
-        UC[GetPortfolioUseCase]
-    end
-    
-    subgraph "UI Components"
-        Card[PortfolioCard]
-        List[PositionList]
-        Chart[PerformanceChart]
-    end
-    
-    Screen -->|uses| Hook
-    Hook -->|reads| Zustand
-    Hook -->|uses| RQ
-    RQ -->|calls| UC
-    
-    Screen -->|renders| Card
-    Screen -->|renders| List
-    Screen -->|renders| Chart
-    
-    Hook -->|provides data| Screen
-    
-    style Screen fill:#FFE6CC,stroke:#D79B00
-    style Hook fill:#D5E8D4,stroke:#82B366
-    style UC fill:#DAE8FC,stroke:#6C8EBF
-```
-
----
-
-## 8. Module Structure & Dependency Rules
-
-### 8.1 Dependency Flow
-
-```mermaid
-graph TD
-    View[View Layer]
-    Domain[Domain Layer]
-    Adapters[Adapters Layer]
-    External[External Systems]
-    
-    View -->|depends on| Domain
-    Adapters -->|implements interfaces in| Domain
-    
-    Adapters -->|integrates with| External
-    
-    Domain -.->|no dependency| View
-    Domain -.->|no dependency| Adapters
-    Domain -.->|no dependency| External
-    
-    style Domain fill:#E6F3FF,stroke:#4A90E2,stroke-width:3px
-    style View fill:#FFE6CC,stroke:#D79B00
-    style Adapters fill:#D5E8D4,stroke:#82B366
-```
-
-**Dependency Rules:**
-
-| Layer | Can Depend On | Cannot Depend On |
-|-------|---------------|------------------|
-| View | Domain, Shared | Adapters (directly) |
-| Domain | Shared (only) | View, Adapters, External |
-| Adapters | Domain, Shared | View |
-| Shared | Nothing | All layers |
-
-### 8.2 Folder Structure
-
-```
-src/
-├── domain/                          # Domain Layer (Business Logic)
-│   ├── entities/                    # Business entities
-│   │   ├── auth/
-│   │   │   ├── User.ts
-│   │   │   ├── Session.ts
-│   │   │   └── Credentials.ts
-│   │   ├── product/
-│   │   │   ├── Product.ts
-│   │   │   └── ProductCategory.ts
-│   │   ├── portfolio/
-│   │   │   ├── Portfolio.ts
-│   │   │   ├── Position.ts
-│   │   │   └── Transaction.ts
-│   │   └── chat/
-│   │       ├── Message.ts
-│   │       ├── Conversation.ts
-│   │       └── Manager.ts
-│   ├── repositories/                # Repository interfaces
-│   │   ├── IAuthRepository.ts
-│   │   ├── IProductRepository.ts
-│   │   ├── IPortfolioRepository.ts
-│   │   └── IChatRepository.ts
-│   ├── usecases/                    # Use cases
-│   │   ├── auth/
-│   │   │   ├── LoginUseCase.ts
-│   │   │   ├── LogoutUseCase.ts
-│   │   │   └── RefreshSessionUseCase.ts
-│   │   ├── product/
-│   │   │   ├── GetProductsUseCase.ts
-│   │   │   ├── GetProductDetailsUseCase.ts
-│   │   │   └── ExpressInterestUseCase.ts
-│   │   ├── portfolio/
-│   │   │   ├── GetPortfolioUseCase.ts
-│   │   │   ├── GetPositionsUseCase.ts
-│   │   │   └── GetTransactionsUseCase.ts
-│   │   └── chat/
-│   │       ├── SendMessageUseCase.ts
-│   │       ├── GetChatHistoryUseCase.ts
-│   │       └── SubscribeToMessagesUseCase.ts
-│   ├── valueobjects/                # Value objects
-│   │   ├── Money.ts
-│   │   ├── Percentage.ts
-│   │   └── DateRange.ts
-│   └── services/                    # Domain services
-│       ├── ValidationService.ts
-│       └── CalculationService.ts
-│
-├── adapters/                        # Adapters Layer (Infrastructure)
-│   ├── api/                         # API clients
-│   │   ├── clients/
-│   │   │   ├── AuthAPIClient.ts
-│   │   │   ├── ProductAPIClient.ts
-│   │   │   ├── PortfolioAPIClient.ts
-│   │   │   └── ChatAPIClient.ts
-│   │   ├── interceptors/
-│   │   │   ├── AuthInterceptor.ts
-│   │   │   └── ErrorInterceptor.ts
-│   │   └── HttpClient.ts
-│   ├── repositories/                # Repository implementations
-│   │   ├── AuthRepository.ts
-│   │   ├── ProductRepository.ts
-│   │   ├── PortfolioRepository.ts
-│   │   └── ChatRepository.ts
-│   ├── storage/                     # Storage adapters
-│   │   ├── AsyncStorageAdapter.ts
-│   │   ├── SecureStorageAdapter.ts
-│   │   └── CacheAdapter.ts
-│   ├── websocket/                   # WebSocket
-│   │   ├── WebSocketManager.ts
-│   │   ├── MessageQueue.ts
-│   │   └── ConnectionMonitor.ts
-│   ├── platform/                    # Platform adapters
-│   │   ├── BiometricAdapter.ts
-│   │   ├── PushNotificationAdapter.ts
-│   │   └── FileSystemAdapter.ts
-│   └── services/                    # Infrastructure services
-│       ├── AnalyticsService.ts
-│       └── ErrorTrackingService.ts
-│
-├── view/                            # View Layer (Presentation)
-│   ├── screens/                     # Screen components
-│   │   ├── auth/
-│   │   │   ├── LoginScreen.tsx
-│   │   │   └── ForgotPasswordScreen.tsx
-│   │   ├── products/
-│   │   │   ├── ProductListScreen.tsx
-│   │   │   └── ProductDetailsScreen.tsx
-│   │   ├── portfolio/
-│   │   │   ├── PortfolioScreen.tsx
-│   │   │   ├── PositionListScreen.tsx
-│   │   │   └── TransactionHistoryScreen.tsx
-│   │   ├── chat/
-│   │   │   └── ChatScreen.tsx
-│   │   └── profile/
-│   │       └── ProfileScreen.tsx
-│   ├── components/                  # Reusable components
-│   │   ├── ui/                      # Basic UI components
-│   │   │   ├── Button.tsx
-│   │   │   ├── Input.tsx
-│   │   │   ├── Card.tsx
-│   │   │   ├── Modal.tsx
-│   │   │   ├── Loader.tsx
-│   │   │   └── ErrorState.tsx
-│   │   ├── charts/                  # Chart components
-│   │   │   ├── PerformanceChart.tsx
-│   │   │   └── AllocationChart.tsx
-│   │   ├── chat/                    # Chat components
-│   │   │   ├── MessageList.tsx
-│   │   │   ├── MessageInput.tsx
-│   │   │   └── ManagerStatus.tsx
-│   │   └── portfolio/               # Portfolio components
-│   │       ├── PositionCard.tsx
-│   │       ├── TransactionItem.tsx
-│   │       └── PortfolioSummary.tsx
-│   ├── navigation/                  # Navigation
-│   │   ├── AppNavigator.tsx
-│   │   ├── TabNavigator.tsx
-│   │   ├── AuthNavigator.tsx
-│   │   └── DeepLinking.ts
-│   ├── hooks/                       # Custom hooks
-│   │   ├── useAuth.ts
-│   │   ├── useProducts.ts
-│   │   ├── usePortfolio.ts
-│   │   ├── useChat.ts
-│   │   └── useNetworkStatus.ts
-│   ├── hocs/                        # Higher-order components
-│   │   ├── withAuth.tsx
-│   │   ├── withErrorBoundary.tsx
-│   │   └── withLoading.tsx
-│   └── styles/                      # Styling
-│       ├── theme.ts
-│       ├── colors.ts
-│       └── typography.ts
-│
-├── shared/                          # Shared utilities
-│   ├── types/                       # Common types
-│   │   ├── Result.ts
-│   │   ├── Either.ts
-│   │   └── Maybe.ts
-│   ├── utils/                       # Utility functions
-│   │   ├── formatting.ts
-│   │   ├── validation.ts
-│   │   └── date.ts
-│   ├── constants/                   # Constants
-│   │   ├── API.ts
-│   │   ├── Config.ts
-│   │   └── Enums.ts
-│   └── errors/                      # Error types
-│       ├── AppError.ts
-│       ├── AuthError.ts
-│       ├── NetworkError.ts
-│       └── ValidationError.ts
-│
-├── state/                           # State management
-│   ├── stores/                      # Zustand stores
-│   │   ├── authStore.ts
-│   │   ├── navigationStore.ts
-│   │   └── uiStore.ts
-│   ├── queries/                     # React Query hooks
-│   │   ├── useProductsQuery.ts
-│   │   ├── usePortfolioQuery.ts
-│   │   └── useChatQuery.ts
-│   └── mutations/                   # React Query mutations
-│       ├── useLoginMutation.ts
-│       ├── useSendMessageMutation.ts
-│       └── useExpressInterestMutation.ts
-│
-├── i18n/                            # Internationalization
-│   ├── index.ts
-│   └── locales/
-│       └── ru/
-│           ├── common.json
-│           ├── auth.json
-│           ├── products.json
-│           ├── portfolio.json
-│           └── chat.json
-│
-├── di/                              # Dependency injection
-│   ├── container.ts
-│   └── providers/
-│       ├── AuthProvider.tsx
-│       └── QueryProvider.tsx
-│
-└── App.tsx                          # App entry point
-```
-
----
-
-## 9. Scalability Considerations
-
-### 9.1 Horizontal Scaling
-
-**Application Scaling:**
-- Stateless architecture
-- Token-based authentication
-- No local state dependency
-- Multiple device support
-
-**Data Scaling:**
-- Pagination for all list endpoints
-- Cursor-based pagination for chat
-- Lazy loading for images
-- Virtual scrolling for long lists
-
-### 9.2 Performance Optimization
-
-**Bundle Optimization:**
-- Code splitting by route
-- Dynamic imports for heavy components
-- Tree shaking
-- Bundle analyzer monitoring
-
-**Runtime Optimization:**
-- Memoization (React.memo, useMemo, useCallback)
-- Virtualization for lists (FlashList)
-- Image caching (react-native-fast-image)
-- Animation on UI thread (Reanimated)
-
-**Memory Management:**
-- Proper cleanup in useEffect
-- Event listener cleanup
-- WebSocket disconnection
-- Image cache management
-
-### 9.3 Feature Scalability
-
-**Adding New Features:**
-
-1. **New Entity (e.g., Documents):**
-   - Add entity in `domain/entities/`
-   - Add repository interface in `domain/repositories/`
-   - Add use cases in `domain/usecases/`
-   - Add API client in `adapters/api/`
-   - Add repository implementation in `adapters/repositories/`
-   - Add screens in `view/screens/`
-   - Add queries/mutations in `state/`
-
-2. **New Feature Module (e.g., Notifications):**
-   - Create complete vertical slice
-   - No changes to existing modules
-   - Clean integration
-
----
-
-## 10. Testability Architecture
-
-### 10.1 Testing Strategy
-
-```mermaid
-graph TB
-    subgraph "Test Pyramid"
-        E2E[E2E Tests<br/>Detox]
-        Integration[Integration Tests<br/>API + Repositories]
-        Unit[Unit Tests<br/>Use Cases + Entities]
-    end
-    
-    subgraph "Coverage Target"
-        E2E_Cover[Critical User Flows]
-        Integration_Cover[Repository Layer]
-        Unit_Cover[Domain Layer 100%]
-    end
-    
-    E2E --> E2E_Cover
-    Integration --> Integration_Cover
-    Unit --> Unit_Cover
-    
-    style Unit fill:#D5E8D4,stroke:#82B366
-    style Integration fill:#FFE6CC,stroke:#D79B00
-    style E2E fill:#F8CECC,stroke:#B85450
-```
-
-### 10.2 Testability Features
-
-**Domain Layer:**
-- Pure functions (no side effects)
-- Dependency injection
-- Mockable interfaces
-- Framework-agnostic
-
-**Adapters Layer:**
-- Interface-based design
-- Mock implementations possible
-- Integration test friendly
-
-**View Layer:**
-- Component testing with React Native Testing Library
-- Hook testing with @testing-library/react-hooks
-- Snapshot testing for UI components
-
-### 10.3 Testing Examples
-
-```typescript
-// Domain Layer Unit Test
-describe('GetPortfolioUseCase', () => {
-  let useCase: GetPortfolioUseCase;
-  let mockRepository: jest.Mocked<IPortfolioRepository>;
-  let mockCache: jest.Mocked<ICacheService>;
-  
-  beforeEach(() => {
-    mockRepository = {
-      getPortfolio: jest.fn(),
-    };
-    mockCache = {
-      get: jest.fn(),
-      set: jest.fn(),
-    };
-    useCase = new GetPortfolioUseCase(mockRepository, mockCache);
-  });
-  
-  it('should return cached portfolio if fresh', async () => {
-    const cachedPortfolio = createMockPortfolio();
-    mockCache.get.mockResolvedValue(cachedPortfolio);
-    
-    const result = await useCase.execute('user-123');
-    
-    expect(result.isSuccess()).toBe(true);
-    expect(result.value).toEqual(cachedPortfolio);
-    expect(mockRepository.getPortfolio).not.toHaveBeenCalled();
-  });
-  
-  it('should fetch from repository if cache is stale', async () => {
-    const stalePortfolio = createMockPortfolio({ lastUpdated: oldDate });
-    mockCache.get.mockResolvedValue(stalePortfolio);
-    const freshPortfolio = createMockPortfolio();
-    mockRepository.getPortfolio.mockResolvedValue(Result.ok(freshPortfolio));
-    
-    const result = await useCase.execute('user-123');
-    
-    expect(result.isSuccess()).toBe(true);
-    expect(mockRepository.getPortfolio).toHaveBeenCalledWith('user-123');
-  });
-});
-
-// View Layer Component Test
-describe('PortfolioScreen', () => {
-  it('should display portfolio overview', () => {
-    const mockPortfolio = createMockPortfolio();
-    
-    const { getByText } = render(
-      <PortfolioScreen portfolio={mockPortfolio} />
-    );
-    
-    expect(getByText('Портфель')).toBeTruthy();
-    expect(getByText(formatCurrency(mockPortfolio.totalValue))).toBeTruthy();
-  });
-  
-  it('should show loading state', () => {
-    const { getByTestId } = render(
-      <PortfolioScreen isLoading={true} />
-    );
-    
-    expect(getByTestId('portfolio-loading')).toBeTruthy();
-  });
-});
-```
-
----
-
-## 11. Security Architecture
-
-### 11.1 Security Layers
-
-```mermaid
-graph TB
-    subgraph "Security Layers"
-        Network[Network Security<br/>TLS 1.3, Certificate Pinning]
-        Auth[Authentication<br/>Token-based, Biometric]
-        Data[Data Security<br/>Encryption at Rest]
-        API[API Security<br/>Input Validation, Rate Limiting]
-    end
-    
-    subgraph "Protection Mechanisms"
-        Network_Protect[Man-in-the-middle Prevention]
-        Auth_Protect[Unauthorized Access Prevention]
-        Data_Protect[Data Theft Prevention]
-        API_Protect[Injection, XSS Prevention]
-    end
-    
-    Network --> Network_Protect
-    Auth --> Auth_Protect
-    Data --> Data_Protect
-    API --> API_Protect
-    
-    style Network fill:#F8CECC,stroke:#B85450
-    style Auth fill:#F8CECC,stroke:#B85450
-    style Data fill:#F8CECC,stroke:#B85450
-    style API fill:#F8CECC,stroke:#B85450
-```
-
-### 11.2 Secure Data Storage
-
-| Data Type | Storage Location | Encryption | Access Control |
-|-----------|-----------------|------------|----------------|
-| Auth Tokens | iOS Keychain / Android Keystore | Platform-native | Biometric/Passcode |
-| User Credentials | Never stored | N/A | N/A |
-| Cached Portfolio | Encrypted AsyncStorage | AES-256 | App sandbox |
-| Chat Messages | Encrypted AsyncStorage | AES-256 | App sandbox |
-| User Preferences | AsyncStorage | Optional | App sandbox |
-
-### 11.3 Network Security
-
-**HTTPS/TLS Configuration:**
-- TLS 1.3 mandatory
-- Certificate pinning for production
-- Public key pinning with backup keys
-- Certificate transparency support
-
-**Request Security:**
-- Bearer token authentication
-- Request signing for sensitive operations
-- Request ID for tracing
-- CSRF protection (via tokens)
-
----
-
-## 12. ADR References
-
-This system design supports the following Architecture Decision Records:
-
-1. **ADR-001: Technology Stack Selection** (to be created)
-2. **ADR-002: Clean Architecture Adoption** (to be created)
-3. **ADR-003: State Management with Zustand** (to be created)
-4. **ADR-004: WebSocket Implementation** (to be created)
-5. **ADR-005: Offline Strategy** (to be created)
-
----
-
-## 13. Risks & Mitigation
-
-### 13.1 Architecture Risks
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| Over-engineering for MVP | Medium | Medium | Start with minimal layers, add complexity as needed |
-| Backend API changes | High | High | Repository pattern isolates changes, API versioning |
-| WebSocket instability | High | Medium | Fallback to REST polling, robust reconnection |
-| Performance degradation with large datasets | Medium | Medium | Pagination, virtualization, lazy loading |
-| State synchronization complexity | Medium | Medium | React Query handles most cases, clear offline strategy |
-
-### 13.2 Mitigation Strategies
-
-1. **Incremental Architecture:**
-   - Start with minimal viable architecture
-   - Add complexity only when needed
-   - Refactor based on actual usage patterns
-
-2. **Defensive Programming:**
-   - Comprehensive error handling
-   - Graceful degradation
-   - Retry mechanisms
-
-3. **Monitoring & Observability:**
-   - Error tracking (Sentry)
-   - Performance monitoring
-   - User behavior analytics
-
----
-
-## 14. Next Steps
-
-### 14.1 Immediate Actions
-
-1. **Create ADR documents** for key decisions
-2. **Set up project structure** following folder layout
-3. **Configure dependency injection** container
-4. **Implement domain entities** for MVP features
-5. **Create repository interfaces** for MVP features
-
-### 14.2 Architecture Evolution
-
-**Phase 1 (MVP):**
-- Core domain layer
-- Basic API integration
-- Essential state management
-
-**Phase 2 (V1.1):**
-- Add WebSocket layer
-- Implement caching strategy
-- Enhance offline support
-
-**Phase 3 (V2.0):**
-- Add advanced features (Documents)
-- Performance optimization
-- Architecture refinement based on learnings
-
----
-
-## 15. Appendix
-
-### 15.1 Technology Stack Summary
-
-| Layer | Technology | Version | Purpose |
-|-------|------------|---------|---------|
-| **Framework** | React Native | 0.73+ | Cross-platform mobile |
-| **Language** | TypeScript | 5.0+ | Type safety |
-| **State Management** | Zustand | 4.5+ | Client state |
-| **Server State** | React Query | 5.0+ | API caching |
-| **Navigation** | React Navigation | 6.0+ | Routing |
-| **Styling** | Tailwind CSS / twrnc | Latest | Styling |
-| **HTTP Client** | Axios | 1.6+ | API calls |
-| **WebSocket** | Socket.io Client | 4.7+ | Real-time |
-| **Secure Storage** | react-native-keychain | 8.1+ | Token storage |
-| **Biometrics** | react-native-biometrics | 3.0+ | Face ID/Touch ID |
-| **Push Notifications** | @react-native-firebase/messaging | 18.0+ | Push notifications |
-| **Charts** | react-native-chart-kit | 6.12+ | Data visualization |
-| **Localization** | react-i18next | 14.0+ | i18n |
-| **Testing** | Jest + React Native Testing Library | Latest | Testing |
-| **Error Tracking** | Sentry | Latest | Error monitoring |
-
-### 15.2 Glossary
-
-| Term | Definition |
-|------|------------|
-| **Clean Architecture** | Architectural pattern that separates concerns into layers with dependency inversion |
-| **Use Case** | Application-specific business rule that orchestrates entities |
-| **Repository** | Pattern that abstracts data access, providing collection-like interface |
-| **Entity** | Business object with identity and behavior |
-| **Value Object** | Immutable object defined by its attributes |
-| **Adapter** | Component that converts interface of a class into another interface |
-| **Dependency Injection** | Design pattern where dependencies are provided rather than created |
-
----
-
-## Document History
-
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2026-03-31 | Software Architect | Initial system design |
-
----
-
-*Document created by Software Architect Agent*  
-*Last updated: 2026-03-31*
+**Document Status**: Approved  
+**Last Updated**: 2025-01-18  
+**Next Review**: 2025-02-18  
+**Owner**: Development Team
